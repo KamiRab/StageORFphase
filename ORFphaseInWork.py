@@ -70,7 +70,7 @@ def file_verification(parameters):
     if len(gff) == len(fasta) and len(fasta) == len(cut) and len(cut) == len(adapt):
         print("The associations of the files are:")
         for i in range(len(gff)):
-            print("GFF: {} \tFASTA: {}\t{} {}".format(gff[i], fasta[i], type, cut[i]))
+            print("GFF: {} \tFASTA: {}\t{} {}\t adaptor: {}".format(gff[i], fasta[i], type, cut[i],adapt[i]))
     else:
         print("There is something wrong with the number of files input. There must be the same number of gff, "
               "fasta files, adaptors sequences and either fastq files/cutadapt directories")
@@ -292,7 +292,12 @@ def main():
                 best_kmer[i] = p0_by_kmer[i][0]
         print("The best kmer to have reads in phase 0 with {}% confiance". format(parameters.thr), best_kmer)
 
-        kmer_choosen = int(input("Kmer to use (Please enter just the number)"))
+        kmer_choosen = int(input("Kmer to use (Please enter just the number)")) #should be list (TODO)
+        suppress_other_directories = input_file("Do you want to suppress the cutadapt directories for the non chooser kmer ? [Y/N]")
+        if suppress_other_directories == "Y" or suppress_other_directories == "y":
+            for i in kmer:
+                if i != kmer_choosen: # will be transformed in not in (TODO)
+                    os.rmdir("kmer_{}".format(i))
     end_time = datetime.now()
     print("\n\n")
     print('Duration: {}'.format(end_time - start_time))
