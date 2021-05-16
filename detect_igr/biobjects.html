@@ -1,0 +1,584 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module biobjects</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>biobjects</strong></big></big> (version 1.0.1)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/media/jean-noel/98257acf-f310-4578-90bb-4121919162c6/Projet_Anne/strali/biobjects.py">/media/jean-noel/98257acf-f310-4578-90bb-4121919162c6/Projet_Anne/strali/biobjects.py</a></font></td></tr></table>
+    <p><tt>Biological&nbsp;entities&nbsp;handling.<br>
+&nbsp;<br>
+biobjects&nbsp;are&nbsp;classes&nbsp;related&nbsp;to&nbsp;biological&nbsp;entities<br>
+such&nbsp;as&nbsp;Features,&nbsp;Transcripts&nbsp;and&nbsp;Genes.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="string.html">string</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="biobjects.html#Gene">Gene</a>
+</font></dt><dt><font face="helvetica, arial"><a href="biobjects.html#Region">Region</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="biobjects.html#Cds">Cds</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="biobjects.html#StraGeRa">StraGeRa</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="biobjects.html#Feature">Feature</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="biobjects.html#Transcript">Transcript</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Cds">class <strong>Cds</strong></a>(<a href="biobjects.html#Region">Region</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#Cds">Cds</a>&nbsp;class&nbsp;has&nbsp;several&nbsp;attributes&nbsp;corresponding&nbsp;to&nbsp;biological&nbsp;CDSes.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="biobjects.html#Cds">Cds</a></dd>
+<dd><a href="biobjects.html#Region">Region</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Cds-__init__"><strong>__init__</strong></a>(self, features, transcript_strand)</dt><dd><tt>Same&nbsp;init&nbsp;as&nbsp;the&nbsp;<a href="#Region">Region</a>&nbsp;class.</tt></dd></dl>
+
+<dl><dt><a name="Cds-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Convenient&nbsp;visualisation.</tt></dd></dl>
+
+<dl><dt><a name="Cds-allframes_reads"><strong>allframes_reads</strong></a>(self, bamfile, shift=12, side=5)</dt><dd><tt>Return&nbsp;a&nbsp;&lt;dict&gt;&nbsp;with&nbsp;the&nbsp;number&nbsp;and&nbsp;percentage<br>
+of&nbsp;reads&nbsp;in&nbsp;each&nbsp;phase.&nbsp;No&nbsp;n&nbsp;selection&nbsp;implemented.&nbsp;Can&nbsp;it&nbsp;be&nbsp;useful&nbsp;?</tt></dd></dl>
+
+<dl><dt><a name="Cds-frames_coverages"><strong>frames_coverages</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'])</dt><dd><tt>Return&nbsp;a&nbsp;&lt;dict&gt;&nbsp;with&nbsp;a&nbsp;coverage&nbsp;list&nbsp;for&nbsp;each&nbsp;frame.</tt></dd></dl>
+
+<dl><dt><a name="Cds-length"><strong>length</strong></a>(self, unit='nt')</dt><dd><tt>length&nbsp;can&nbsp;be&nbsp;returned&nbsp;in&nbsp;nucleotide&nbsp;(nt)&nbsp;or&nbsp;codon&nbsp;(codon).</tt></dd></dl>
+
+<dl><dt><a name="Cds-pos_cov"><strong>pos_cov</strong></a>(self, bamfile, shift=12, side=5, n=0, kmers=['Total'], tr=None)</dt><dd><tt>Overide&nbsp;the&nbsp;<a href="#Region">Region</a>&nbsp;pos_cov&nbsp;because&nbsp;CDS&nbsp;can&nbsp;be&nbsp;plotted&nbsp;alone.&nbsp;When<br>
+it&nbsp;happens,&nbsp;the&nbsp;gen_rel_map&nbsp;of&nbsp;the&nbsp;transcript&nbsp;should&nbsp;be&nbsp;updated.</tt></dd></dl>
+
+<dl><dt><a name="Cds-start_around"><strong>start_around</strong></a>(self, bamfile, meta_start, shift=12, side=5, kmers=['Total'], inner=100, outer=20)</dt><dd><tt>Fill&nbsp;the&nbsp;meta_start&nbsp;with&nbsp;the&nbsp;coverage&nbsp;of&nbsp;the&nbsp;positions<br>
+in&nbsp;the&nbsp;OUTER-INNER&nbsp;interval.&nbsp;Used&nbsp;for&nbsp;meta&nbsp;genes.</tt></dd></dl>
+
+<dl><dt><a name="Cds-start_codon"><strong>start_codon</strong></a>(self, fapick)</dt><dd><tt>Return&nbsp;the&nbsp;sequence&nbsp;of&nbsp;the&nbsp;start&nbsp;codon.</tt></dd></dl>
+
+<dl><dt><a name="Cds-stop_around"><strong>stop_around</strong></a>(self, bamfile, meta_stop, shift=12, side=5, inner=100, outer=20, kmers=['Total'])</dt><dd><tt>Fill&nbsp;the&nbsp;meta_start&nbsp;with&nbsp;the&nbsp;coverage&nbsp;of&nbsp;the&nbsp;positions<br>
+in&nbsp;the&nbsp;OUTER-INNER&nbsp;interval.&nbsp;Used&nbsp;for&nbsp;meta&nbsp;genes.</tt></dd></dl>
+
+<dl><dt><a name="Cds-stop_codon"><strong>stop_codon</strong></a>(self, fapick)</dt><dd><tt>Return&nbsp;the&nbsp;sequence&nbsp;of&nbsp;the&nbsp;stop&nbsp;codon.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="biobjects.html#Region">Region</a>:<br>
+<dl><dt><a name="Cds-__iter__"><strong>__iter__</strong></a>(self)</dt><dd><tt>Make&nbsp;this&nbsp;class&nbsp;iterable&nbsp;on&nbsp;the&nbsp;list&nbsp;of&nbsp;features.</tt></dd></dl>
+
+<dl><dt><a name="Cds-__len__"><strong>__len__</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;number&nbsp;of&nbsp;features&nbsp;in&nbsp;the&nbsp;region.</tt></dd></dl>
+
+<dl><dt><a name="Cds-bokeh_figure"><strong>bokeh_figure</strong></a>(self, shift=12, side=5, only_total=False)</dt><dd><tt>#&nbsp;Need&nbsp;plot&nbsp;function&nbsp;here&nbsp;=&gt;&nbsp;Only&nbsp;'mature',&nbsp;it&nbsp;means&nbsp;all&nbsp;the&nbsp;features<br>
+#&nbsp;will&nbsp;be&nbsp;concatenated<br>
+#&nbsp;Make&nbsp;the&nbsp;DATAFRAME&nbsp;=&gt;&nbsp;then&nbsp;use&nbsp;kmers&nbsp;or&nbsp;total&nbsp;vbar_figure</tt></dd></dl>
+
+<dl><dt><a name="Cds-counts"><strong>counts</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'])</dt><dd><tt>Return&nbsp;the&nbsp;total&nbsp;count&nbsp;of&nbsp;reads&nbsp;on&nbsp;the&nbsp;<a href="#Region">Region</a>.</tt></dd></dl>
+
+<dl><dt><a name="Cds-detect_introns"><strong>detect_introns</strong></a>(self)</dt><dd><tt>Return&nbsp;limits&nbsp;(5'&nbsp;=&gt;&nbsp;3')&nbsp;of&nbsp;the&nbsp;introns&nbsp;in&nbsp;the&nbsp;region.</tt></dd></dl>
+
+<dl><dt><a name="Cds-mask"><strong>mask</strong></a>(self, fapick)</dt><dd><tt>Mask&nbsp;the&nbsp;whole&nbsp;region&nbsp;in&nbsp;the&nbsp;fasta&nbsp;pickle.</tt></dd></dl>
+
+<dl><dt><a name="Cds-sequence"><strong>sequence</strong></a>(self, fapick, n=0)</dt><dd><tt>Return&nbsp;the&nbsp;sequence&nbsp;of&nbsp;the&nbsp;<a href="#Region">Region</a>&nbsp;from&nbsp;fapick&nbsp;sequences.<br>
+Sequence&nbsp;is&nbsp;5'&nbsp;=&gt;&nbsp;3'&nbsp;oriented.</tt></dd></dl>
+
+<dl><dt><a name="Cds-split_sequence"><strong>split_sequence</strong></a>(self, fapick)</dt><dd><tt>Return&nbsp;a&nbsp;list&nbsp;with&nbsp;the&nbsp;sequence&nbsp;of&nbsp;each&nbsp;feature&nbsp;of&nbsp;the&nbsp;region.</tt></dd></dl>
+
+<dl><dt><a name="Cds-tupleview"><strong>tupleview</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;tupleview.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="biobjects.html#Region">Region</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Feature">class <strong>Feature</strong></a>(<a href="biobjects.html#StraGeRa">StraGeRa</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#Feature">Feature</a>&nbsp;class&nbsp;can&nbsp;be&nbsp;seen&nbsp;as&nbsp;a&nbsp;line&nbsp;of&nbsp;GFF&nbsp;file.<br>
+A&nbsp;<a href="#Feature">Feature</a>&nbsp;inherits&nbsp;from&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;to&nbsp;access&nbsp;all&nbsp;genome<br>
+arithmetic&nbsp;functions.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="biobjects.html#Feature">Feature</a></dd>
+<dd><a href="biobjects.html#StraGeRa">StraGeRa</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Feature-__init__"><strong>__init__</strong></a>(self, feature_id='NO_ID', gffline=None, **kwargs)</dt><dd><tt>A&nbsp;<a href="#Feature">Feature</a>&nbsp;can&nbsp;be&nbsp;initialized&nbsp;in&nbsp;two&nbsp;ways:<br>
+1)&nbsp;A&nbsp;line&nbsp;of&nbsp;GFF3&nbsp;formatted&nbsp;file<br>
+2)&nbsp;Manually&nbsp;from&nbsp;kwargs<br>
+Feature_id&nbsp;is&nbsp;ONLY&nbsp;used&nbsp;for&nbsp;manual&nbsp;initialization.&nbsp;With&nbsp;gffline,<br>
+the&nbsp;feature_id&nbsp;is&nbsp;initialised&nbsp;from&nbsp;attributes&nbsp;field&nbsp;('ID'&nbsp;tag).</tt></dd></dl>
+
+<dl><dt><a name="Feature-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Convenient&nbsp;visualisation&nbsp;on&nbsp;printing</tt></dd></dl>
+
+<dl><dt><a name="Feature-add_tag"><strong>add_tag</strong></a>(self, tag_name, tag_value)</dt></dl>
+
+<dl><dt><a name="Feature-get_tag"><strong>get_tag</strong></a>(self, tag_name)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;the&nbsp;tag_name.&nbsp;If&nbsp;not&nbsp;found,&nbsp;return&nbsp;None.</tt></dd></dl>
+
+<dl><dt><a name="Feature-gffline"><strong>gffline</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;gff&nbsp;line&nbsp;(without&nbsp;<br>
+)&nbsp;corresponding&nbsp;to&nbsp;the&nbsp;feature.</tt></dd></dl>
+
+<dl><dt><a name="Feature-rm_tag"><strong>rm_tag</strong></a>(self, tag_name)</dt></dl>
+
+<dl><dt><a name="Feature-set_tag"><strong>set_tag</strong></a>(self, tag_name, tag_value)</dt><dd><tt>Convenient&nbsp;way&nbsp;to&nbsp;set&nbsp;a&nbsp;tag&nbsp;value&nbsp;and&nbsp;check&nbsp;if&nbsp;the&nbsp;tag&nbsp;is&nbsp;legal.</tt></dd></dl>
+
+<dl><dt><a name="Feature-update_attributes"><strong>update_attributes</strong></a>(self)</dt><dd><tt>Update&nbsp;self.<strong>attributes</strong>&nbsp;taking&nbsp;tag&nbsp;values&nbsp;in&nbsp;self.<strong>tags</strong>.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>ID</strong></dt>
+<dd><tt>Convenient&nbsp;way&nbsp;to&nbsp;access&nbsp;ID&nbsp;tag.</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="biobjects.html#StraGeRa">StraGeRa</a>:<br>
+<dl><dt><a name="Feature-__lt__"><strong>__lt__</strong></a>(self, other)</dt><dd><tt><a href="#StraGeRa">StraGeRa</a>&nbsp;are&nbsp;sorted&nbsp;by&nbsp;their&nbsp;start&nbsp;position&nbsp;(5').</tt></dd></dl>
+
+<dl><dt><a name="Feature-adjust_limits"><strong>adjust_limits</strong></a>(self, n)</dt><dd><tt>Return&nbsp;the&nbsp;adjused&nbsp;limits&nbsp;start/end&nbsp;depending&nbsp;on&nbsp;the&nbsp;number<br>
+of&nbsp;positions&nbsp;required&nbsp;by&nbsp;'n'.&nbsp;The&nbsp;increment&nbsp;is&nbsp;usefull<br>
+to&nbsp;conserve&nbsp;the&nbsp;orientation&nbsp;(can&nbsp;be&nbsp;1&nbsp;or&nbsp;-1).</tt></dd></dl>
+
+<dl><dt><a name="Feature-bokeh_figure"><strong>bokeh_figure</strong></a>(self, shift=12, side=5, fapick=None, only_total=False)</dt><dd><tt>Coverage&nbsp;representation&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.</tt></dd></dl>
+
+<dl><dt><a name="Feature-counts"><strong>counts</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'])</dt><dd><tt>Return&nbsp;a&nbsp;dictionary&nbsp;with&nbsp;the&nbsp;number&nbsp;of&nbsp;reads&nbsp;(each&nbsp;kmer&nbsp;detailed)<br>
+on&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;positions.</tt></dd></dl>
+
+<dl><dt><a name="Feature-covered_positions"><strong>covered_positions</strong></a>(self, n=0)</dt><dd><tt>Return&nbsp;a&nbsp;generator&nbsp;of&nbsp;all&nbsp;positions&nbsp;covered&nbsp;by<br>
+the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;(start&nbsp;and&nbsp;end&nbsp;are&nbsp;included).<br>
+'n'&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;select&nbsp;a&nbsp;sub-range.&nbsp;If&nbsp;n&nbsp;&gt;&nbsp;0,&nbsp;the<br>
+positions&nbsp;are&nbsp;selected&nbsp;from&nbsp;the&nbsp;5'.&nbsp;If&nbsp;n&nbsp;&lt;&nbsp;0,&nbsp;from&nbsp;the&nbsp;3'.<br>
+If&nbsp;n&nbsp;&gt;&nbsp;self.<a href="#Feature-length">length</a>()&nbsp;or&nbsp;n&nbsp;=&nbsp;0,&nbsp;n&nbsp;is&nbsp;ignored&nbsp;and&nbsp;all&nbsp;positions<br>
+are&nbsp;returned.</tt></dd></dl>
+
+<dl><dt><a name="Feature-length"><strong>length</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.</tt></dd></dl>
+
+<dl><dt><a name="Feature-mask"><strong>mask</strong></a>(self, fapick)</dt><dd><tt>Mask&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;sequence&nbsp;in&nbsp;the&nbsp;fapick&nbsp;(fasta&nbsp;in&nbsp;pickle).<br>
+/!\&nbsp;Warning,&nbsp;fapick&nbsp;is&nbsp;modified&nbsp;inplace!</tt></dd></dl>
+
+<dl><dt><a name="Feature-pos_cov"><strong>pos_cov</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'], n=0)</dt><dd><tt>Return&nbsp;a&nbsp;dictionary&nbsp;with&nbsp;the&nbsp;coverage&nbsp;informations&nbsp;with&nbsp;the&nbsp;keys:<br>
+-&nbsp;'positions'&nbsp;=&nbsp;all&nbsp;the&nbsp;genomic&nbsp;positions&nbsp;covered&nbsp;by&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;(5'=&gt;3')<br>
+-&nbsp;'coverages'&nbsp;=&nbsp;#&nbsp;of&nbsp;reads&nbsp;on&nbsp;each&nbsp;positions,&nbsp;same&nbsp;order&nbsp;as&nbsp;'positions'<br>
+-&nbsp;'details'&nbsp;=&nbsp;list&nbsp;of&nbsp;dictionaries&nbsp;with&nbsp;the&nbsp;Kmer&nbsp;count&nbsp;details<br>
+-&nbsp;'bank_size'&nbsp;=&nbsp;total&nbsp;number&nbsp;of&nbsp;read&nbsp;mapped&nbsp;in&nbsp;the&nbsp;bamfile</tt></dd></dl>
+
+<dl><dt><a name="Feature-sequence"><strong>sequence</strong></a>(self, fapick, n=0, translate_to_protein=False)</dt><dd><tt>Return&nbsp;the&nbsp;5'&nbsp;-&gt;&nbsp;3'&nbsp;oriented&nbsp;sequence&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.<br>
+`fapick`&nbsp;=&nbsp;&lt;dict&gt;&nbsp;with&nbsp;seqid&nbsp;as&nbsp;key&nbsp;and&nbsp;sequence&nbsp;as&nbsp;value.<br>
+Use&nbsp;'fasta2pickle.py'&nbsp;program&nbsp;to&nbsp;generate&nbsp;a&nbsp;fapick&nbsp;from&nbsp;Fasta.</tt></dd></dl>
+
+<dl><dt><a name="Feature-tupleview"><strong>tupleview</strong></a>(self, strand='int')</dt><dd><tt>Return&nbsp;a&nbsp;tuple&nbsp;view&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;with:<br>
+(start,&nbsp;end,&nbsp;increment/strand)<br>
+MIN_COORDS&nbsp;is&nbsp;a&nbsp;namedtuple&nbsp;defined&nbsp;in&nbsp;constants.py.<br>
+&nbsp;<br>
+I&nbsp;think&nbsp;I&nbsp;need&nbsp;to&nbsp;remove&nbsp;it,&nbsp;and&nbsp;use&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;objects&nbsp;instead?</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="biobjects.html#StraGeRa">StraGeRa</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Gene">class <strong>Gene</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Base&nbsp;class&nbsp;for&nbsp;genes<br>
+Intentionnaly,&nbsp;<a href="#Gene">Gene</a>&nbsp;is&nbsp;not&nbsp;considered&nbsp;as&nbsp;a&nbsp;<a href="#Feature">Feature</a>.&nbsp;This&nbsp;for<br>
+several&nbsp;reasons.&nbsp;The&nbsp;strongest&nbsp;is&nbsp;that&nbsp;a&nbsp;<a href="#Gene">Gene</a>&nbsp;limits&nbsp;can&nbsp;be&nbsp;defined<br>
+by&nbsp;one&nbsp;or&nbsp;more&nbsp;transcripts&nbsp;(isoforms).&nbsp;Moreover,&nbsp;EVERY&nbsp;gene&nbsp;has&nbsp;at<br>
+least&nbsp;one&nbsp;transcript.&nbsp;So&nbsp;<a href="#Gene">Gene</a>&nbsp;class&nbsp;is&nbsp;based&nbsp;on&nbsp;a&nbsp;list&nbsp;of&nbsp;transcripts<br>
+to&nbsp;compute&nbsp;genome&nbsp;arithmetics.&nbsp;The&nbsp;<a href="#Gene">Gene</a>&nbsp;start&nbsp;and&nbsp;end&nbsp;are&nbsp;defined&nbsp;by<br>
+the&nbsp;larger&nbsp;limits,&nbsp;even&nbsp;if&nbsp;two&nbsp;transcripts&nbsp;have&nbsp;to&nbsp;be&nbsp;combined.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Gene-__init__"><strong>__init__</strong></a>(self, name, record, transcript_keyword='transcript')</dt><dd><tt>initialised&nbsp;from&nbsp;a&nbsp;GffRecord&nbsp;<a href="builtins.html#object">object</a>&nbsp;(loader.py).<br>
+Transcript_keyword&nbsp;is&nbsp;correspond&nbsp;to&nbsp;the&nbsp;transcript&nbsp;identifier&nbsp;in<br>
+the&nbsp;third&nbsp;column&nbsp;of&nbsp;GFF&nbsp;file.</tt></dd></dl>
+
+<dl><dt><a name="Gene-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Return&nbsp;repr(self).</tt></dd></dl>
+
+<dl><dt><a name="Gene-appris_transcripts"><strong>appris_transcripts</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;generator&nbsp;to&nbsp;iterate&nbsp;only&nbsp;on&nbsp;transcripts&nbsp;(<a href="#Transcript">Transcript</a>)<br>
+with&nbsp;'appris_principal'&nbsp;tag.&nbsp;Usually&nbsp;it&nbsp;allows&nbsp;a&nbsp;significant<br>
+filter&nbsp;of&nbsp;spurious&nbsp;transcripts.</tt></dd></dl>
+
+<dl><dt><a name="Gene-get_tag"><strong>get_tag</strong></a>(self, tag_name)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;associated&nbsp;with&nbsp;the&nbsp;tag_name.</tt></dd></dl>
+
+<dl><dt><a name="Gene-get_transcript"><strong>get_transcript</strong></a>(self, transcript_id)</dt><dd><tt>Return&nbsp;the&nbsp;<a href="#Transcript">Transcript</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;with&nbsp;transcript_id.<br>
+It&nbsp;not&nbsp;found,&nbsp;return&nbsp;None.</tt></dd></dl>
+
+<dl><dt><a name="Gene-get_transcript_figure"><strong>get_transcript_figure</strong></a>(self, bamfile, transcript_id=None, shift=12, side=5, kmers=['Total'], state='mature', only_total=False, n=0, colors=None, glyphs=['annot'], fapick=None, scaling=False, rpm=False, split_signal=False, total_color='black')</dt><dd><tt>Plot&nbsp;the&nbsp;selected&nbsp;transcript&nbsp;of&nbsp;the&nbsp;gene.&nbsp;If&nbsp;no&nbsp;transcript<br>
+provided,&nbsp;the&nbsp;first&nbsp;transcript&nbsp;of&nbsp;the&nbsp;list&nbsp;is&nbsp;plotted.</tt></dd></dl>
+
+<dl><dt><a name="Gene-gffline"><strong>gffline</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;gffline&nbsp;(without&nbsp;ending&nbsp;"<br>
+")&nbsp;of&nbsp;the&nbsp;gene.</tt></dd></dl>
+
+<dl><dt><a name="Gene-select_transcripts"><strong>select_transcripts</strong></a>(self, transcripts_to_select)</dt><dd><tt>Return&nbsp;a&nbsp;generator&nbsp;with&nbsp;the&nbsp;selected&nbsp;transcripts&nbsp;(<a href="#Transcript">Transcript</a>).</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>end</strong></dt>
+<dd><tt>The&nbsp;end&nbsp;is&nbsp;the&nbsp;last&nbsp;end&nbsp;of&nbsp;all&nbsp;transcripts.</tt></dd>
+</dl>
+<dl><dt><strong>start</strong></dt>
+<dd><tt>The&nbsp;start&nbsp;is&nbsp;the&nbsp;first&nbsp;start&nbsp;of&nbsp;all&nbsp;transcripts.</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Region">class <strong>Region</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Base&nbsp;class&nbsp;for&nbsp;regions.<br>
+&nbsp;<br>
+The&nbsp;Regions&nbsp;are&nbsp;the&nbsp;different&nbsp;transcripts&nbsp;part&nbsp;like:<br>
+CDS,&nbsp;UTRs&nbsp;and&nbsp;exons.&nbsp;These&nbsp;regions&nbsp;can&nbsp;contain&nbsp;1&nbsp;or&nbsp;more<br>
+features.&nbsp;If&nbsp;the&nbsp;GFF&nbsp;file&nbsp;provide&nbsp;the&nbsp;features&nbsp;order,<br>
+the&nbsp;ordering&nbsp;is&nbsp;enforced&nbsp;by&nbsp;these&nbsp;declaration.&nbsp;IF&nbsp;it&nbsp;is&nbsp;not,<br>
+features&nbsp;will&nbsp;be&nbsp;ranked&nbsp;by&nbsp;theu&nbsp;genomic&nbsp;position,&nbsp;and&nbsp;using<br>
+the&nbsp;transcript&nbsp;strand,&nbsp;their&nbsp;order&nbsp;will&nbsp;be&nbsp;automatically&nbsp;defined.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Region-__init__"><strong>__init__</strong></a>(self, features, transcript_strand)</dt><dd><tt>A&nbsp;region&nbsp;is&nbsp;defined&nbsp;from&nbsp;a&nbsp;list&nbsp;of&nbsp;features&nbsp;objects&nbsp;and<br>
+the&nbsp;strand&nbsp;of&nbsp;the&nbsp;transcript&nbsp;it&nbsp;belongs&nbsp;to.</tt></dd></dl>
+
+<dl><dt><a name="Region-__iter__"><strong>__iter__</strong></a>(self)</dt><dd><tt>Make&nbsp;this&nbsp;class&nbsp;iterable&nbsp;on&nbsp;the&nbsp;list&nbsp;of&nbsp;features.</tt></dd></dl>
+
+<dl><dt><a name="Region-__len__"><strong>__len__</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;number&nbsp;of&nbsp;features&nbsp;in&nbsp;the&nbsp;region.</tt></dd></dl>
+
+<dl><dt><a name="Region-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Convenient&nbsp;visualisation&nbsp;on&nbsp;printing.</tt></dd></dl>
+
+<dl><dt><a name="Region-bokeh_figure"><strong>bokeh_figure</strong></a>(self, shift=12, side=5, only_total=False)</dt><dd><tt>#&nbsp;Need&nbsp;plot&nbsp;function&nbsp;here&nbsp;=&gt;&nbsp;Only&nbsp;'mature',&nbsp;it&nbsp;means&nbsp;all&nbsp;the&nbsp;features<br>
+#&nbsp;will&nbsp;be&nbsp;concatenated<br>
+#&nbsp;Make&nbsp;the&nbsp;DATAFRAME&nbsp;=&gt;&nbsp;then&nbsp;use&nbsp;kmers&nbsp;or&nbsp;total&nbsp;vbar_figure</tt></dd></dl>
+
+<dl><dt><a name="Region-counts"><strong>counts</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'])</dt><dd><tt>Return&nbsp;the&nbsp;total&nbsp;count&nbsp;of&nbsp;reads&nbsp;on&nbsp;the&nbsp;<a href="#Region">Region</a>.</tt></dd></dl>
+
+<dl><dt><a name="Region-detect_introns"><strong>detect_introns</strong></a>(self)</dt><dd><tt>Return&nbsp;limits&nbsp;(5'&nbsp;=&gt;&nbsp;3')&nbsp;of&nbsp;the&nbsp;introns&nbsp;in&nbsp;the&nbsp;region.</tt></dd></dl>
+
+<dl><dt><a name="Region-length"><strong>length</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;length&nbsp;in&nbsp;nucleotide&nbsp;of&nbsp;the&nbsp;<a href="#Region">Region</a>.</tt></dd></dl>
+
+<dl><dt><a name="Region-mask"><strong>mask</strong></a>(self, fapick)</dt><dd><tt>Mask&nbsp;the&nbsp;whole&nbsp;region&nbsp;in&nbsp;the&nbsp;fasta&nbsp;pickle.</tt></dd></dl>
+
+<dl><dt><a name="Region-pos_cov"><strong>pos_cov</strong></a>(self, bamfile, shift=12, side=5, n=0, kmers=['Total'])</dt><dd><tt>Return&nbsp;the&nbsp;pos_cov&nbsp;dictionary&nbsp;for&nbsp;the&nbsp;region.</tt></dd></dl>
+
+<dl><dt><a name="Region-sequence"><strong>sequence</strong></a>(self, fapick, n=0)</dt><dd><tt>Return&nbsp;the&nbsp;sequence&nbsp;of&nbsp;the&nbsp;<a href="#Region">Region</a>&nbsp;from&nbsp;fapick&nbsp;sequences.<br>
+Sequence&nbsp;is&nbsp;5'&nbsp;=&gt;&nbsp;3'&nbsp;oriented.</tt></dd></dl>
+
+<dl><dt><a name="Region-split_sequence"><strong>split_sequence</strong></a>(self, fapick)</dt><dd><tt>Return&nbsp;a&nbsp;list&nbsp;with&nbsp;the&nbsp;sequence&nbsp;of&nbsp;each&nbsp;feature&nbsp;of&nbsp;the&nbsp;region.</tt></dd></dl>
+
+<dl><dt><a name="Region-tupleview"><strong>tupleview</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;tupleview.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="StraGeRa">class <strong>StraGeRa</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#StraGeRa">StraGeRa</a>:&nbsp;STRAnded&nbsp;GEnome&nbsp;RAnge.<br>
+&nbsp;<br>
+This&nbsp;class&nbsp;aims&nbsp;at&nbsp;handling&nbsp;a&nbsp;continuous&nbsp;nucleotide&nbsp;sequence<br>
+of&nbsp;a&nbsp;genome.&nbsp;It&nbsp;may&nbsp;be&nbsp;defined&nbsp;by&nbsp;4&nbsp;attributes:<br>
+&gt;&nbsp;seqid&nbsp;(more&nbsp;used&nbsp;as&nbsp;chromosome)<br>
+&gt;&nbsp;start&nbsp;(5'&nbsp;end)<br>
+&gt;&nbsp;end&nbsp;(3'&nbsp;end)<br>
+&gt;&nbsp;strand&nbsp;('+'&nbsp;or&nbsp;'-')<br>
+&nbsp;<br>
+Since&nbsp;a&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;<a href="builtins.html#object">object</a>&nbsp;will&nbsp;always&nbsp;be&nbsp;5'&nbsp;=&gt;&nbsp;3'&nbsp;oriented,&nbsp;the<br>
+consistency&nbsp;of&nbsp;start/end&nbsp;and&nbsp;strand&nbsp;is&nbsp;automatically&nbsp;tested.<br>
+Example:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;strag&nbsp;=&nbsp;<a href="#StraGeRa">StraGeRa</a>("chrI",&nbsp;10,&nbsp;50,&nbsp;"-")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;print(strag.start)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;output:&nbsp;50,&nbsp;not&nbsp;10.<br>
+&nbsp;<br>
+In&nbsp;contrast&nbsp;with&nbsp;'start'/'end'&nbsp;(5'&nbsp;=&gt;&nbsp;3'&nbsp;orientation),&nbsp;the&nbsp;'left'/'right'<br>
+attributes&nbsp;respectively&nbsp;refer&nbsp;to&nbsp;the&nbsp;minimum&nbsp;and&nbsp;maximum&nbsp;genomic&nbsp;positions<br>
+covered&nbsp;by&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.&nbsp;Those&nbsp;attributes&nbsp;are&nbsp;used&nbsp;in&nbsp;the&nbsp;GFF3/BED&nbsp;formats<br>
+to&nbsp;define&nbsp;limits&nbsp;of&nbsp;the&nbsp;features.<br>
+Example:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;strag&nbsp;=&nbsp;<a href="#StraGeRa">StraGeRa</a>("chrI",&nbsp;10,&nbsp;50,&nbsp;"-")<br>
+&nbsp;&nbsp;&nbsp;&nbsp;print(strag.left)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;output:&nbsp;10.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="StraGeRa-__init__"><strong>__init__</strong></a>(self, seqid, start, end, strand)</dt><dd><tt>Constructor</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-__lt__"><strong>__lt__</strong></a>(self, other)</dt><dd><tt><a href="#StraGeRa">StraGeRa</a>&nbsp;are&nbsp;sorted&nbsp;by&nbsp;their&nbsp;start&nbsp;position&nbsp;(5').</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Convenient&nbsp;visualisation&nbsp;on&nbsp;printing</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-adjust_limits"><strong>adjust_limits</strong></a>(self, n)</dt><dd><tt>Return&nbsp;the&nbsp;adjused&nbsp;limits&nbsp;start/end&nbsp;depending&nbsp;on&nbsp;the&nbsp;number<br>
+of&nbsp;positions&nbsp;required&nbsp;by&nbsp;'n'.&nbsp;The&nbsp;increment&nbsp;is&nbsp;usefull<br>
+to&nbsp;conserve&nbsp;the&nbsp;orientation&nbsp;(can&nbsp;be&nbsp;1&nbsp;or&nbsp;-1).</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-bokeh_figure"><strong>bokeh_figure</strong></a>(self, shift=12, side=5, fapick=None, only_total=False)</dt><dd><tt>Coverage&nbsp;representation&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-counts"><strong>counts</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'])</dt><dd><tt>Return&nbsp;a&nbsp;dictionary&nbsp;with&nbsp;the&nbsp;number&nbsp;of&nbsp;reads&nbsp;(each&nbsp;kmer&nbsp;detailed)<br>
+on&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;positions.</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-covered_positions"><strong>covered_positions</strong></a>(self, n=0)</dt><dd><tt>Return&nbsp;a&nbsp;generator&nbsp;of&nbsp;all&nbsp;positions&nbsp;covered&nbsp;by<br>
+the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;(start&nbsp;and&nbsp;end&nbsp;are&nbsp;included).<br>
+'n'&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;select&nbsp;a&nbsp;sub-range.&nbsp;If&nbsp;n&nbsp;&gt;&nbsp;0,&nbsp;the<br>
+positions&nbsp;are&nbsp;selected&nbsp;from&nbsp;the&nbsp;5'.&nbsp;If&nbsp;n&nbsp;&lt;&nbsp;0,&nbsp;from&nbsp;the&nbsp;3'.<br>
+If&nbsp;n&nbsp;&gt;&nbsp;self.<a href="#StraGeRa-length">length</a>()&nbsp;or&nbsp;n&nbsp;=&nbsp;0,&nbsp;n&nbsp;is&nbsp;ignored&nbsp;and&nbsp;all&nbsp;positions<br>
+are&nbsp;returned.</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-length"><strong>length</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-mask"><strong>mask</strong></a>(self, fapick)</dt><dd><tt>Mask&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;sequence&nbsp;in&nbsp;the&nbsp;fapick&nbsp;(fasta&nbsp;in&nbsp;pickle).<br>
+/!\&nbsp;Warning,&nbsp;fapick&nbsp;is&nbsp;modified&nbsp;inplace!</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-pos_cov"><strong>pos_cov</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'], n=0)</dt><dd><tt>Return&nbsp;a&nbsp;dictionary&nbsp;with&nbsp;the&nbsp;coverage&nbsp;informations&nbsp;with&nbsp;the&nbsp;keys:<br>
+-&nbsp;'positions'&nbsp;=&nbsp;all&nbsp;the&nbsp;genomic&nbsp;positions&nbsp;covered&nbsp;by&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;(5'=&gt;3')<br>
+-&nbsp;'coverages'&nbsp;=&nbsp;#&nbsp;of&nbsp;reads&nbsp;on&nbsp;each&nbsp;positions,&nbsp;same&nbsp;order&nbsp;as&nbsp;'positions'<br>
+-&nbsp;'details'&nbsp;=&nbsp;list&nbsp;of&nbsp;dictionaries&nbsp;with&nbsp;the&nbsp;Kmer&nbsp;count&nbsp;details<br>
+-&nbsp;'bank_size'&nbsp;=&nbsp;total&nbsp;number&nbsp;of&nbsp;read&nbsp;mapped&nbsp;in&nbsp;the&nbsp;bamfile</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-sequence"><strong>sequence</strong></a>(self, fapick, n=0, translate_to_protein=False)</dt><dd><tt>Return&nbsp;the&nbsp;5'&nbsp;-&gt;&nbsp;3'&nbsp;oriented&nbsp;sequence&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.<br>
+`fapick`&nbsp;=&nbsp;&lt;dict&gt;&nbsp;with&nbsp;seqid&nbsp;as&nbsp;key&nbsp;and&nbsp;sequence&nbsp;as&nbsp;value.<br>
+Use&nbsp;'fasta2pickle.py'&nbsp;program&nbsp;to&nbsp;generate&nbsp;a&nbsp;fapick&nbsp;from&nbsp;Fasta.</tt></dd></dl>
+
+<dl><dt><a name="StraGeRa-tupleview"><strong>tupleview</strong></a>(self, strand='int')</dt><dd><tt>Return&nbsp;a&nbsp;tuple&nbsp;view&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;with:<br>
+(start,&nbsp;end,&nbsp;increment/strand)<br>
+MIN_COORDS&nbsp;is&nbsp;a&nbsp;namedtuple&nbsp;defined&nbsp;in&nbsp;constants.py.<br>
+&nbsp;<br>
+I&nbsp;think&nbsp;I&nbsp;need&nbsp;to&nbsp;remove&nbsp;it,&nbsp;and&nbsp;use&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;objects&nbsp;instead?</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Transcript">class <strong>Transcript</strong></a>(<a href="biobjects.html#Feature">Feature</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Base&nbsp;class&nbsp;for&nbsp;Transcripts.<br>
+&nbsp;<br>
+Transcripts&nbsp;are&nbsp;defined&nbsp;from&nbsp;their&nbsp;parent&nbsp;(gene)&nbsp;id&nbsp;and&nbsp;name.<br>
+A&nbsp;transcript&nbsp;is&nbsp;made&nbsp;of&nbsp;regions.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="biobjects.html#Transcript">Transcript</a></dd>
+<dd><a href="biobjects.html#Feature">Feature</a></dd>
+<dd><a href="biobjects.html#StraGeRa">StraGeRa</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Transcript-__init__"><strong>__init__</strong></a>(self, gene_id, gene_name, record=None, transcript_id=None, gffline=None)</dt><dd><tt>Constructor&nbsp;from&nbsp;GffRecord&nbsp;(loaders.py)&nbsp;or&nbsp;gffline.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-__repr__"><strong>__repr__</strong></a>(self)</dt><dd><tt>Convenient&nbsp;visualisation&nbsp;on&nbsp;printing</tt></dd></dl>
+
+<dl><dt><a name="Transcript-counts"><strong>counts</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'])</dt><dd><tt>Return&nbsp;a&nbsp;dictionary&nbsp;with&nbsp;the&nbsp;count&nbsp;in&nbsp;each&nbsp;features&nbsp;for&nbsp;each<br>
+kmer&nbsp;in&nbsp;'kmers'.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-introns_limits"><strong>introns_limits</strong></a>(self)</dt><dd><tt>Return&nbsp;a&nbsp;list&nbsp;of&nbsp;tuples&nbsp;with&nbsp;the&nbsp;introns&nbsp;limits&nbsp;(5'&nbsp;=&gt;&nbsp;3').</tt></dd></dl>
+
+<dl><dt><a name="Transcript-introns_sequences"><strong>introns_sequences</strong></a>(self, fapick)</dt><dd><tt>Return&nbsp;the&nbsp;sequences&nbsp;of&nbsp;each&nbsp;introns.<br>
+The&nbsp;order&nbsp;returned&nbsp;is&nbsp;5'&nbsp;=&gt;&nbsp;3'&nbsp;in&nbsp;the&nbsp;transcript.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-mature_length"><strong>mature_length</strong></a>(self)</dt><dd><tt>#&nbsp;Need&nbsp;a&nbsp;method&nbsp;to&nbsp;have&nbsp;the&nbsp;mature&nbsp;length...!</tt></dd></dl>
+
+<dl><dt><a name="Transcript-mature_pos_cov"><strong>mature_pos_cov</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'], n=0)</dt><dd><tt>Return&nbsp;the&nbsp;mature&nbsp;mRNA&nbsp;positions&nbsp;and&nbsp;coverage&nbsp;from&nbsp;EXON&nbsp;region.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-mature_sequence"><strong>mature_sequence</strong></a>(self, fapick, n=0)</dt><dd><tt>Return&nbsp;exon&nbsp;region&nbsp;sequence.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-pre_pos_cov"><strong>pre_pos_cov</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'], n=0)</dt><dd><tt>Return&nbsp;the&nbsp;pre-mRNA&nbsp;(with&nbsp;intron)&nbsp;positions&nbsp;and&nbsp;coverages.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-pre_sequence"><strong>pre_sequence</strong></a>(self, fapick, n=0)</dt><dd><tt>Return&nbsp;the&nbsp;pre-mature&nbsp;sequence&nbsp;of&nbsp;the&nbsp;transcript.<br>
+Results&nbsp;will&nbsp;be&nbsp;consistents&nbsp;only&nbsp;for&nbsp;linear&nbsp;genes.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="biobjects.html#Feature">Feature</a>:<br>
+<dl><dt><a name="Transcript-add_tag"><strong>add_tag</strong></a>(self, tag_name, tag_value)</dt></dl>
+
+<dl><dt><a name="Transcript-get_tag"><strong>get_tag</strong></a>(self, tag_name)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;the&nbsp;tag_name.&nbsp;If&nbsp;not&nbsp;found,&nbsp;return&nbsp;None.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-gffline"><strong>gffline</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;gff&nbsp;line&nbsp;(without&nbsp;<br>
+)&nbsp;corresponding&nbsp;to&nbsp;the&nbsp;feature.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-rm_tag"><strong>rm_tag</strong></a>(self, tag_name)</dt></dl>
+
+<dl><dt><a name="Transcript-set_tag"><strong>set_tag</strong></a>(self, tag_name, tag_value)</dt><dd><tt>Convenient&nbsp;way&nbsp;to&nbsp;set&nbsp;a&nbsp;tag&nbsp;value&nbsp;and&nbsp;check&nbsp;if&nbsp;the&nbsp;tag&nbsp;is&nbsp;legal.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-update_attributes"><strong>update_attributes</strong></a>(self)</dt><dd><tt>Update&nbsp;self.<strong>attributes</strong>&nbsp;taking&nbsp;tag&nbsp;values&nbsp;in&nbsp;self.<strong>tags</strong>.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="biobjects.html#Feature">Feature</a>:<br>
+<dl><dt><strong>ID</strong></dt>
+<dd><tt>Convenient&nbsp;way&nbsp;to&nbsp;access&nbsp;ID&nbsp;tag.</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="biobjects.html#StraGeRa">StraGeRa</a>:<br>
+<dl><dt><a name="Transcript-__lt__"><strong>__lt__</strong></a>(self, other)</dt><dd><tt><a href="#StraGeRa">StraGeRa</a>&nbsp;are&nbsp;sorted&nbsp;by&nbsp;their&nbsp;start&nbsp;position&nbsp;(5').</tt></dd></dl>
+
+<dl><dt><a name="Transcript-adjust_limits"><strong>adjust_limits</strong></a>(self, n)</dt><dd><tt>Return&nbsp;the&nbsp;adjused&nbsp;limits&nbsp;start/end&nbsp;depending&nbsp;on&nbsp;the&nbsp;number<br>
+of&nbsp;positions&nbsp;required&nbsp;by&nbsp;'n'.&nbsp;The&nbsp;increment&nbsp;is&nbsp;usefull<br>
+to&nbsp;conserve&nbsp;the&nbsp;orientation&nbsp;(can&nbsp;be&nbsp;1&nbsp;or&nbsp;-1).</tt></dd></dl>
+
+<dl><dt><a name="Transcript-bokeh_figure"><strong>bokeh_figure</strong></a>(self, shift=12, side=5, fapick=None, only_total=False)</dt><dd><tt>Coverage&nbsp;representation&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-covered_positions"><strong>covered_positions</strong></a>(self, n=0)</dt><dd><tt>Return&nbsp;a&nbsp;generator&nbsp;of&nbsp;all&nbsp;positions&nbsp;covered&nbsp;by<br>
+the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;(start&nbsp;and&nbsp;end&nbsp;are&nbsp;included).<br>
+'n'&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;select&nbsp;a&nbsp;sub-range.&nbsp;If&nbsp;n&nbsp;&gt;&nbsp;0,&nbsp;the<br>
+positions&nbsp;are&nbsp;selected&nbsp;from&nbsp;the&nbsp;5'.&nbsp;If&nbsp;n&nbsp;&lt;&nbsp;0,&nbsp;from&nbsp;the&nbsp;3'.<br>
+If&nbsp;n&nbsp;&gt;&nbsp;self.<a href="#Transcript-length">length</a>()&nbsp;or&nbsp;n&nbsp;=&nbsp;0,&nbsp;n&nbsp;is&nbsp;ignored&nbsp;and&nbsp;all&nbsp;positions<br>
+are&nbsp;returned.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-length"><strong>length</strong></a>(self)</dt><dd><tt>Return&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-mask"><strong>mask</strong></a>(self, fapick)</dt><dd><tt>Mask&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;sequence&nbsp;in&nbsp;the&nbsp;fapick&nbsp;(fasta&nbsp;in&nbsp;pickle).<br>
+/!\&nbsp;Warning,&nbsp;fapick&nbsp;is&nbsp;modified&nbsp;inplace!</tt></dd></dl>
+
+<dl><dt><a name="Transcript-pos_cov"><strong>pos_cov</strong></a>(self, bamfile, shift=12, side=5, kmers=['Total'], n=0)</dt><dd><tt>Return&nbsp;a&nbsp;dictionary&nbsp;with&nbsp;the&nbsp;coverage&nbsp;informations&nbsp;with&nbsp;the&nbsp;keys:<br>
+-&nbsp;'positions'&nbsp;=&nbsp;all&nbsp;the&nbsp;genomic&nbsp;positions&nbsp;covered&nbsp;by&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;(5'=&gt;3')<br>
+-&nbsp;'coverages'&nbsp;=&nbsp;#&nbsp;of&nbsp;reads&nbsp;on&nbsp;each&nbsp;positions,&nbsp;same&nbsp;order&nbsp;as&nbsp;'positions'<br>
+-&nbsp;'details'&nbsp;=&nbsp;list&nbsp;of&nbsp;dictionaries&nbsp;with&nbsp;the&nbsp;Kmer&nbsp;count&nbsp;details<br>
+-&nbsp;'bank_size'&nbsp;=&nbsp;total&nbsp;number&nbsp;of&nbsp;read&nbsp;mapped&nbsp;in&nbsp;the&nbsp;bamfile</tt></dd></dl>
+
+<dl><dt><a name="Transcript-sequence"><strong>sequence</strong></a>(self, fapick, n=0, translate_to_protein=False)</dt><dd><tt>Return&nbsp;the&nbsp;5'&nbsp;-&gt;&nbsp;3'&nbsp;oriented&nbsp;sequence&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>.<br>
+`fapick`&nbsp;=&nbsp;&lt;dict&gt;&nbsp;with&nbsp;seqid&nbsp;as&nbsp;key&nbsp;and&nbsp;sequence&nbsp;as&nbsp;value.<br>
+Use&nbsp;'fasta2pickle.py'&nbsp;program&nbsp;to&nbsp;generate&nbsp;a&nbsp;fapick&nbsp;from&nbsp;Fasta.</tt></dd></dl>
+
+<dl><dt><a name="Transcript-tupleview"><strong>tupleview</strong></a>(self, strand='int')</dt><dd><tt>Return&nbsp;a&nbsp;tuple&nbsp;view&nbsp;of&nbsp;the&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;with:<br>
+(start,&nbsp;end,&nbsp;increment/strand)<br>
+MIN_COORDS&nbsp;is&nbsp;a&nbsp;namedtuple&nbsp;defined&nbsp;in&nbsp;constants.py.<br>
+&nbsp;<br>
+I&nbsp;think&nbsp;I&nbsp;need&nbsp;to&nbsp;remove&nbsp;it,&nbsp;and&nbsp;use&nbsp;<a href="#StraGeRa">StraGeRa</a>&nbsp;objects&nbsp;instead?</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="biobjects.html#StraGeRa">StraGeRa</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>APPRIS_LEVEL</strong> = 1<br>
+<strong>APPRIS_P_ALL</strong> = 'appris_principal'<br>
+<strong>APPRIS_P_LEV</strong> = 'appris_principal_1'<br>
+<strong>ATTRIBUTES</strong> = 8<br>
+<strong>BLIT</strong> = '<font color="#c040c0">\x1b</font>[3;34m'<br>
+<strong>BLITUN</strong> = '<font color="#c040c0">\x1b</font>[4;34m'<br>
+<strong>CDS</strong> = 'CDS'<br>
+<strong>END</strong> = 4<br>
+<strong>EXON</strong> = 'exon'<br>
+<strong>FRAMES_CORREL</strong> = {0: {0: 0, 1: 1, 2: 2}, 1: {0: 2, 1: 0, 2: 1}, 2: {0: 1, 1: 2, 2: 0}}<br>
+<strong>GENE</strong> = 'gene'<br>
+<strong>GFF_COM</strong> = '#'<br>
+<strong>GFF_SEP</strong> = '<font color="#c040c0">\t</font>'<br>
+<strong>GRIT</strong> = '<font color="#c040c0">\x1b</font>[3;32m'<br>
+<strong>ID_TAG</strong> = 'ID'<br>
+<strong>INNER</strong> = 100<br>
+<strong>KMERS</strong> = ['Total']<br>
+<strong>MASK_BASE</strong> = 'N'<br>
+<strong>NA</strong> = '<font color="#c040c0">\x1b</font>[0m'<br>
+<strong>NAME_TAG</strong> = 'Name'<br>
+<strong>N_0</strong> = 0<br>
+<strong>ORDERED_REGIONS</strong> = ['UTR5', 'CDS', 'UTR3']<br>
+<strong>ORIT</strong> = '<font color="#c040c0">\x1b</font>[3;33m'<br>
+<strong>OUTER</strong> = 20<br>
+<strong>PARENT_TAG</strong> = 'Parent'<br>
+<strong>PHASE</strong> = 7<br>
+<strong>RANK_TAG</strong> = 'exon_number'<br>
+<strong>REIT</strong> = '<font color="#c040c0">\x1b</font>[3;31m'<br>
+<strong>SCORE</strong> = 5<br>
+<strong>SEQID</strong> = 0<br>
+<strong>SHIFT</strong> = 12<br>
+<strong>SIDE</strong> = 5<br>
+<strong>SOURCE</strong> = 1<br>
+<strong>START</strong> = 3<br>
+<strong>STRAND</strong> = 6<br>
+<strong>STRANDS_MAP</strong> = {'+': {'ali': 0, 'ali_rev': 16, 'one': 1}, '-': {'ali': 16, 'ali_rev': 0, 'one': -1}, '.': {'one': 1}}<br>
+<strong>TAG_SEP</strong> = ';'<br>
+<strong>TOTAL_KEYNAME</strong> = 'Total'<br>
+<strong>TRANSCRIPT</strong> = 'transcript'<br>
+<strong>TYPE</strong> = 2<br>
+<strong>UTR</strong> = 'UTR'<br>
+<strong>UTR3</strong> = 'UTR3'<br>
+<strong>UTR5</strong> = 'UTR5'<br>
+<strong>VAL_SEP</strong> = '='<br>
+<strong>__email__</strong> = 'pierre.bertin@i2bc.paris-saclay.fr'<br>
+<strong>__license__</strong> = 'GPL'<br>
+<strong>__maintainer__</strong> = 'Pierre Bertin'<br>
+<strong>__status__</strong> = 'Development'</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Pierre&nbsp;Bertin</td></tr></table>
+</body></html>

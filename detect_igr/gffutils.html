@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module gffutils</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>gffutils</strong></big></big> (version 1.0.1)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/media/jean-noel/98257acf-f310-4578-90bb-4121919162c6/Projet_Anne/strali/gffutils.py">/media/jean-noel/98257acf-f310-4578-90bb-4121919162c6/Projet_Anne/strali/gffutils.py</a></font></td></tr></table>
+    <p><tt>Contains&nbsp;functions&nbsp;to&nbsp;parse&nbsp;GFF3&nbsp;formatted&nbsp;file.<br>
+&nbsp;<br>
+Fields&nbsp;are&nbsp;tab&nbsp;separated,&nbsp;and&nbsp;attributes&nbsp;';'&nbsp;separated.<br>
+These&nbsp;constants&nbsp;are&nbsp;imported&nbsp;from&nbsp;constants&nbsp;module.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="re.html">re</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-attributes_string_from_tags"><strong>attributes_string_from_tags</strong></a>(tags)</dt><dd><tt>From&nbsp;a&nbsp;tags&nbsp;dictionary&nbsp;of&nbsp;tag_name:&nbsp;tag_values,<br>
+return&nbsp;a&nbsp;string&nbsp;following&nbsp;GFF3&nbsp;attributes&nbsp;field&nbsp;specifications.</tt></dd></dl>
+ <dl><dt><a name="-check_rank_in_id"><strong>check_rank_in_id</strong></a>(feature_id)</dt><dd><tt>Check&nbsp;if&nbsp;the&nbsp;rank&nbsp;is&nbsp;in&nbsp;ID&nbsp;tag&nbsp;(feature_type:transcript_id:rank).<br>
+If&nbsp;yes,&nbsp;return&nbsp;this&nbsp;number.&nbsp;0&nbsp;otherwise.</tt></dd></dl>
+ <dl><dt><a name="-check_utr_label"><strong>check_utr_label</strong></a>(feature)</dt><dd><tt>If&nbsp;feature.ftype&nbsp;==&nbsp;UTR,&nbsp;UTR5&nbsp;or&nbsp;UTR3&nbsp;have&nbsp;to&nbsp;be&nbsp;defined.<br>
+Attempt&nbsp;to&nbsp;get&nbsp;it&nbsp;from&nbsp;feature.ID.&nbsp;If&nbsp;not&nbsp;possible,&nbsp;UTR&nbsp;is&nbsp;kept<br>
+but&nbsp;plots&nbsp;will&nbsp;not&nbsp;contains&nbsp;UTRs.<br>
+Need&nbsp;to&nbsp;implement&nbsp;a&nbsp;function&nbsp;to&nbsp;detect&nbsp;UTR5&nbsp;or&nbsp;UTR3.</tt></dd></dl>
+ <dl><dt><a name="-get_tags_and_values"><strong>get_tags_and_values</strong></a>(attributes)</dt><dd><tt>Return&nbsp;all&nbsp;the&nbsp;tag&nbsp;and&nbsp;their&nbsp;value&nbsp;in&nbsp;attributes.</tt></dd></dl>
+ <dl><dt><a name="-gff_field"><strong>gff_field</strong></a>(field, gffline)</dt><dd><tt>Return&nbsp;the&nbsp;field&nbsp;value&nbsp;from&nbsp;gffline&nbsp;already&nbsp;strip().</tt></dd></dl>
+ <dl><dt><a name="-gff_tag"><strong>gff_tag</strong></a>(tag_name, gffline)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;the&nbsp;given&nbsp;tag&nbsp;from&nbsp;a&nbsp;gffline.<br>
+None&nbsp;is&nbsp;returned&nbsp;if&nbsp;tag_name&nbsp;is&nbsp;not&nbsp;found.</tt></dd></dl>
+ <dl><dt><a name="-read_all_fields"><strong>read_all_fields</strong></a>(gffline)</dt><dd><tt>Return&nbsp;the&nbsp;value&nbsp;of&nbsp;each&nbsp;field&nbsp;from&nbsp;gffline</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>ATTRIBUTES</strong> = 8<br>
+<strong>END</strong> = 4<br>
+<strong>GFF_COM</strong> = '#'<br>
+<strong>GFF_SEP</strong> = '<font color="#c040c0">\t</font>'<br>
+<strong>ID_TAG</strong> = 'ID'<br>
+<strong>PARENT_TAG</strong> = 'Parent'<br>
+<strong>PHASE</strong> = 7<br>
+<strong>REGEX_ID</strong> = re.compile('ID=([^;]+);?')<br>
+<strong>REGEX_PARENT</strong> = re.compile('Parent=([^;]+);?')<br>
+<strong>SCORE</strong> = 5<br>
+<strong>SEQID</strong> = 0<br>
+<strong>SOURCE</strong> = 1<br>
+<strong>START</strong> = 3<br>
+<strong>STRAND</strong> = 6<br>
+<strong>TAG_SEP</strong> = ';'<br>
+<strong>TYPE</strong> = 2<br>
+<strong>UTR</strong> = 'UTR'<br>
+<strong>VAL_SEP</strong> = '='<br>
+<strong>__email__</strong> = 'pierre.bertin@i2bc.paris-saclay.fr'<br>
+<strong>__license__</strong> = 'GPL'<br>
+<strong>__maintainer__</strong> = 'Pierre Bertin'<br>
+<strong>__status__</strong> = 'Development'</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Pierre&nbsp;Bertin</td></tr></table>
+</body></html>

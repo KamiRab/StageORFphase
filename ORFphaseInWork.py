@@ -6,8 +6,12 @@ import subprocess
 import time
 import pandas as pd
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 
+# TODO R2 strange
+# detectIGR : pysam, bokeh
+# TODO partial codon ?
 def get_args():
     """
 
@@ -24,16 +28,16 @@ def get_args():
                         required=True,
                         nargs="*",
                         help="FASTA file containing the genome sequence")
-    parser.add_argument("-kmer", #can only choose one option of kmer
-                        type=list,
+    parser.add_argument("-fastq",
+                        type=str,
+                        required=True,
+                        nargs="*",
+                        help="FASTQ file containing the riboseq reads")
+    parser.add_argument("-kmer",  # can only choose one option of kmer
+                        type=int,
                         required=False,
                         nargs=2,
                         default=[26, 30])
-    parser.add_argument("-fastq",
-                        type=str,
-                        required=False,
-                        nargs="*",
-                        help="FASTQ file containing the riboseq reads")
     parser.add_argument("-cutdir",
                         type=str,
                         required=False,  # if directory not given, launch cutadapt
@@ -54,29 +58,20 @@ def get_args():
     args = parser.parse_args()
     return args
 
+
 def file_verification(parameters):
     gff = parameters.gff
-    fasta= parameters.fasta
+    fasta = parameters.fasta
     adapt = parameters.adapt
-    if not parameters.cutdir and not parameters.fastq:
-        print("You need to either give a fastq file or the directory containing the cutadapt files")
-        exit()
-    elif parameters.cutdir:
-        cut = parameters.cutdir
-        type = "Directory(ies) of cutadapt files:"
-    else:
-        cut = parameters.fastq
-        type = "Fastq file(s)"
-    if len(gff) == len(fasta) and len(fasta) == len(cut) and len(cut) == len(adapt):
+    fastq = parameters.fastq
+    if len(gff) == len(fasta) and len(fasta) == len(fastq) and len(fastq) == len(adapt):
         print("The associations of the files are:")
         for i in range(len(gff)):
-            print("GFF: {} \tFASTA: {}\t{} {}\t adaptor: {}".format(gff[i], fasta[i], type, cut[i],adapt[i]))
+            print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t adaptor: {}".format(gff[i], fasta[i], fastq[i], adapt[i]))
     else:
         print("There is something wrong with the number of files input. There must be the same number of gff, "
-              "fasta files, adaptors sequences and either fastq files/cutadapt directories")
+              "fasta files, adaptors sequences and fastq files")
         exit()
-
-
 
 
 def classify_reads(kmer, fastq_file, adaptor, rname, cutdir):
@@ -95,9 +90,9 @@ def classify_reads(kmer, fastq_file, adaptor, rname, cutdir):
         if e.errno != errno.EEXIST:
             raise
     cutadapt_cmd = "cutadapt {} -j 1 --quality-base=33 -a {} \
--m {} -M {} -e 0.12 -o {}/kmer_{}/{}_kmer{}.fastq".format(fastq_file, adaptor, str(kmer), str(kmer),cutdir,
-                                                                     str(kmer),
-                                                                     rname, str(kmer))
+-m {} -M {} -e 0.12 -o {}/kmer_{}/{}_kmer{}.fastq".format(fastq_file, adaptor, str(kmer), str(kmer), cutdir,
+                                                          str(kmer),
+                                                          rname, str(kmer))
     print("We are cutting the reads in {}-mers".format(kmer))
     process = subprocess.run(cutadapt_cmd, shell=True)
 
@@ -138,15 +133,17 @@ def map_in_bam_and_count(kmer, gname, rname, cutdir):
     cmd_bowtie = "bowtie --wrapper basic-0 -v 2 -y -a -m 1 --best --strata -p 18 -x {}_CDS {}/kmer_{}/{}_kmer{}.fastq -S kmer_{}/{}_kmer{}.sam".format(
         gname, cutdir, str(kmer), rname, str(kmer), str(kmer), rname, str(kmer))
     # c. Transform sam into bam
-    cmd_sam_bam = "samtools view -h -b -S {}/kmer_{}/{}_kmer{}.sam > {}/kmer_{}/{}_kmer{}.bam".format(cutdir, str(kmer), rname,
-                                                                                                str(kmer),cutdir,
-                                                                                                str(kmer), rname,
-                                                                                                str(kmer))
+    cmd_sam_bam = "samtools view -h -b -S {}/kmer_{}/{}_kmer{}.sam > {}/kmer_{}/{}_kmer{}.bam".format(cutdir, str(kmer),
+                                                                                                      rname,
+                                                                                                      str(kmer), cutdir,
+                                                                                                      str(kmer), rname,
+                                                                                                      str(kmer))
     # d. Sort the bam file
-    cmd_sam_sort = "samtools sort {}/kmer_{}/{}_kmer{}.bam -o {}/kmer_{}/{}_kmer{}_sorted.bam".format(cutdir, str(kmer), rname,
-                                                                                                str(kmer),cutdir,
-                                                                                                str(kmer), rname,
-                                                                                                str(kmer))
+    cmd_sam_sort = "samtools sort {}/kmer_{}/{}_kmer{}.bam -o {}/kmer_{}/{}_kmer{}_sorted.bam".format(cutdir, str(kmer),
+                                                                                                      rname,
+                                                                                                      str(kmer), cutdir,
+                                                                                                      str(kmer), rname,
+                                                                                                      str(kmer))
     # e. Keep only the mapped reads
     cmd_sam_map = "samtools view -F 4 -f 0,16 -h -b {}/kmer_{}/{}_kmer{}_sorted.bam > {}/kmer_{}/{}_kmer{}_sorted_mapped.bam".format(
         cutdir, str(kmer), rname, str(kmer), cutdir, str(kmer), rname, str(kmer))
@@ -180,7 +177,7 @@ def map_in_bam_and_count(kmer, gname, rname, cutdir):
     print("The count table has been generated for kmer {}".format(kmer))
 
 
-def perc_phase(kmer, rname, cutdir):
+def mean_phase(kmer, rname, cutdir):
     '''
 
     :param kmer:
@@ -197,6 +194,7 @@ def perc_phase(kmer, rname, cutdir):
     phase1sum = tab["Number of p1"].sum()
     phase2sum = tab["Number of p2"].sum()
     sumreads = phase0sum + phase1sum + phase2sum
+    sumreads2 = tab["Number of reads"].sum()
 
     # List with frequency of each phase
     perc.append(phase0sum / sumreads)
@@ -207,6 +205,25 @@ def perc_phase(kmer, rname, cutdir):
             rname, kmer, perc[0], perc[1], perc[2]))
     return perc
 
+def distribution_phase_plot(kmer, rname, cutdir, reads_thr):
+    '''
+
+    :param kmer:
+    :param rname:
+    :param cutdir:
+    :param reads_thr:
+    :return:
+    '''
+    tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_reads.tab".format(cutdir, kmer, rname, kmer), sep='\t',
+                        names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
+                               "Percentage of p0", "Percentage of p1", "Percentage of p2"])
+    tab_select = tab[tab['Number of reads']>reads_thr]
+    plt.figure()
+    tab_select.boxplot(column=["Percentage of p0", "Percentage of p1", "Percentage of p2"])
+    # plt.show()
+    plt.savefig('./Boxplot_phases_{}_kmer{}.png'.format(rname, kmer))
+
+
 def main():
     start_time = datetime.now()
 
@@ -216,17 +233,17 @@ def main():
     file_verification(parameters)
     for input_file in range(len(parameters.gff)):
         kmer = range(parameters.kmer[0], parameters.kmer[1] + 1)
-        fastq_file = parameters.fastq[input_file]
-        genome_file = parameters.fasta[input_file]
-        gff_file = parameters.gff[input_file]
-        adapt = parameters.adapt[input_file]
-        cutdir = "."
 
+        genome_file = parameters.fasta[input_file]
+        gname = os.path.basename(genome_file)
+        gname = os.path.splitext(gname)[0]
+
+        fastq_file = parameters.fastq[input_file]
         rname = os.path.basename(fastq_file)
         rname = os.path.splitext(rname)[0]
 
-        gname = os.path.basename(genome_file)
-        gname = os.path.splitext(gname)[0]
+        gff_file = parameters.gff[input_file]
+        adapt = parameters.adapt[input_file]
 
 
         # 1. Extraction of the NT sequences of the CDS
@@ -243,28 +260,28 @@ def main():
                 wgff.write('{:20s}\t{}\t{:20s}\t{:d}\t{:d}\t{}\t{}\t{}\t{}\n'.format(
                     i, 'SGD', 'gene', 1, len(transcriptome[i]), '.', '+', '0', str('ID=' + i)))
 
-        #3. Potential launch of cutadapt and def of cutadapt files directory
-        if not parameters.cutdir and not parameters.fastq:
-            print("You need to either give a fastq file or the directory containing the cutadapt files")
-        elif not parameters.cutdir:
+        # 3. Potential launch of cutadapt and definition of cutadapt files directory
+        if not parameters.cutdir:
+            cutdir = "."
+            print(" The cutadapt process will be launched")
             try:
                 import cutadapt
-                print("\nThe cutadapt process is launching. The reads are cut in {}-kmers".format(parameters.kmer))
+                print("\nNo directory for cutadapt files has been given, the cutadapt process is launching. "
+                      "The reads are cut in {}-kmers".format(parameters.kmer))
             except ImportError:
                 print('''cutadapt is not installed, please check ''')  # add link for installation
-            fastq_file = parameters.fastq[0]
-            for i in kmer:
-                classify_reads(i, fastq_file, adapt, rname, cutdir)
-            # with concurrent.futures.process.ProcessPoolExecutor(max_workers=None) as executor:
-            #     executor.map(classify_reads, kmer, [fastq_file] * len(kmer), [adaptor[0]] * len(kmer),
-            #                  [rname] * len(kmer),[cutdir]*len(kmer))
+
+            # for i in kmer:
+            #     classify_reads(i, fastq_file, adapt, rname, cutdir)
+            with concurrent.futures.process.ProcessPoolExecutor(max_workers=None) as executor:
+                executor.map(classify_reads, kmer, [fastq_file] * len(kmer), [adapt] * len(kmer),
+                             [rname] * len(kmer),[cutdir]*len(kmer))
         else:
-            if parameters.fastq:
-                print("You entered fastq and cutadapt directories, "
-                      "the directory will be used directly without launching cutadapt")
-            cutdir = parameters.cutdir
+            print("You entered directory(ies) for cutadapt files. No cutadapt process will be launched")
+            cutdir = parameters.cutdir[input_file]
             for i in kmer:
-                if not os.path.isdir("{}/kmer_{}".format(parameters.cutdir, i)):
+                name_dir = "{}/kmer_{}".format(cutdir, i)
+                if not os.path.isdir(name_dir):
                     print("The directories need to be named as kmer_x with x the size of the kmer.")
                     exit()
 
@@ -277,9 +294,14 @@ def main():
         while not os.path.exists(gname + "_CDS.1.ebwt"):  # Why ?
             time.sleep(1)
 
-        #b->g. Create count table
+        # b->g. Create count table
+        try :
+            import pysam
+            import bokeh
+        except ImportError:
+            print("You need to install the python packages pysam and bokeh")
         for i in kmer:
-            map_in_bam_and_count(i,gname, rname, cutdir)
+            map_in_bam_and_count(i, gname, rname, cutdir)
         # with concurrent.futures.process.ProcessPoolExecutor(max_workers=None) as executor:
         #     executor.map(map_in_bam_and_count, kmer, [gname] * len(kmer), [rname] * len(kmer), [cutdir] * len(kmer))
 
@@ -287,19 +309,28 @@ def main():
         p0_by_kmer = {}
         best_kmer = {}
         for i in kmer:
-            p0_by_kmer[i] = perc_phase(i, rname, parameters.cutdir)
+            p0_by_kmer[i] = mean_phase(i, rname, cutdir)
             if p0_by_kmer[i][0] > parameters.thr / 100:
                 best_kmer[i] = p0_by_kmer[i][0]
-        print("The best kmer to have reads in phase 0 with {}% confiance". format(parameters.thr), best_kmer)
+            distribution_phase_plot(kmer, rname, cutdir, 100)
+        print("The kmer with a mean superior to {}% are: ".format(parameters.thr), best_kmer)
+        if best_kmer:
+            kmer_choosen = int(input("Kmer to use (Please enter just the number)"))  # should be list (TODO)
+            suppress_other_directories = input("Do you want to suppress the cutadapt directories for the non chooser "
+                                               "kmer ? [Y/N]")
+            if suppress_other_directories == "Y" or suppress_other_directories == "y":
+                for i in kmer:
+                    if i != kmer_choosen:  # will be transformed in not in (TODO)
+                        os.rmdir("kmer_{}".format(i))
+        else :
+            print("No kmer had a mean of phase 0 superior to the threshold")
 
-        kmer_choosen = int(input("Kmer to use (Please enter just the number)")) #should be list (TODO)
-        suppress_other_directories = input_file("Do you want to suppress the cutadapt directories for the non chooser kmer ? [Y/N]")
-        if suppress_other_directories == "Y" or suppress_other_directories == "y":
-            for i in kmer:
-                if i != kmer_choosen: # will be transformed in not in (TODO)
-                    os.rmdir("kmer_{}".format(i))
     end_time = datetime.now()
     print("\n\n")
     print('Duration: {}'.format(end_time - start_time))
 
-main()
+
+distribution_phase_plot(26, "R3", ".", 100)
+distribution_phase_plot(27, "R3", ".", 100)
+distribution_phase_plot(28, "R3", ".", 100)
+# main()

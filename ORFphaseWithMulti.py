@@ -210,9 +210,10 @@ def main_with_multiprocess():
     try:
         import cutadapt
 
-        print("cutadadapt\t:\tCHECK")
+        print("\n cutadadapt\t:\tCHECK")
     except ImportError:
-        print("cutadapt is not installed, please check")  # add link to installation
+        print("\n cutadapt is not installed") # add link to installation
+        exit()
     with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
         executor.map(classify_reads, kmer, [fastq_file] * len(kmer), adaptor * len(kmer),
                      [rname] * len(kmer), [cutdir]*len(kmer))

@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module bokeh_plots</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>bokeh_plots</strong></big></big> (version 1.0.1)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/media/jean-noel/98257acf-f310-4578-90bb-4121919162c6/Projet_Anne/strali/bokeh_plots.py">/media/jean-noel/98257acf-f310-4578-90bb-4121919162c6/Projet_Anne/strali/bokeh_plots.py</a></font></td></tr></table>
+    <p><tt>Module&nbsp;handling&nbsp;all&nbsp;funtions&nbsp;related&nbsp;to&nbsp;plots&nbsp;with&nbsp;bokeh&nbsp;library.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-add_annotations"><strong>add_annotations</strong></a>(bokeh_figure, transcript, max_x, max_y, glyphs=['annot'], sequence=None, shift=0)</dt><dd><tt>Add&nbsp;the&nbsp;annotations&nbsp;to&nbsp;represent&nbsp;transcript&nbsp;annotation&nbsp;like&nbsp;boxes<br>
+at&nbsp;the&nbsp;bottom&nbsp;of&nbsp;the&nbsp;plot&nbsp;area&nbsp;and&nbsp;sequences&nbsp;+&nbsp;codons.<br>
+glyphs&nbsp;is&nbsp;a&nbsp;list&nbsp;and&nbsp;can&nbsp;contain:&nbsp;'annot',&nbsp;'nt',&nbsp;'codon'.</tt></dd></dl>
+ <dl><dt><a name="-add_annotations_2"><strong>add_annotations_2</strong></a>(bokeh_figure, transcript, max_x, max_y, glyphs=['annot'], sequence=None, shift=0, second=False)</dt><dd><tt>Add&nbsp;the&nbsp;annotations&nbsp;to&nbsp;represent&nbsp;transcript&nbsp;annotation&nbsp;like&nbsp;boxes<br>
+at&nbsp;the&nbsp;bottom&nbsp;of&nbsp;the&nbsp;plot&nbsp;area&nbsp;and&nbsp;sequences&nbsp;+&nbsp;codons.<br>
+glyphs&nbsp;is&nbsp;a&nbsp;list&nbsp;and&nbsp;can&nbsp;contain:&nbsp;'annot',&nbsp;'nt',&nbsp;'codon'.</tt></dd></dl>
+ <dl><dt><a name="-add_annotations_glyph"><strong>add_annotations_glyph</strong></a>(bokeh_figure, transcript, max_x, max_y)</dt><dd><tt>Generate&nbsp;quads&nbsp;from&nbsp;annotations&nbsp;of&nbsp;the&nbsp;transcript's&nbsp;features.</tt></dd></dl>
+ <dl><dt><a name="-add_annotations_glyph_2"><strong>add_annotations_glyph_2</strong></a>(bokeh_figure, transcript, max_x, max_y, second=False)</dt><dd><tt>Generate&nbsp;quads&nbsp;from&nbsp;annotations&nbsp;of&nbsp;the&nbsp;transcript's&nbsp;features.</tt></dd></dl>
+ <dl><dt><a name="-add_codons_glyph"><strong>add_codons_glyph</strong></a>(bokeh_figure, max_y, sequence, shift=0)</dt><dd><tt>In&nbsp;a&nbsp;first&nbsp;time,&nbsp;only&nbsp;start&nbsp;and&nbsp;stop&nbsp;codons&nbsp;are&nbsp;displayed.<br>
+If&nbsp;pre_sequence&nbsp;=&gt;&nbsp;Introns&nbsp;are&nbsp;biasing&nbsp;all&nbsp;the&nbsp;phasing.<br>
+Need&nbsp;to&nbsp;remove&nbsp;introns&nbsp;from&nbsp;codons&nbsp;?<br>
+Or&nbsp;trying&nbsp;to&nbsp;introduce&nbsp;the&nbsp;phase.</tt></dd></dl>
+ <dl><dt><a name="-add_codons_glyph_2"><strong>add_codons_glyph_2</strong></a>(bokeh_figure, max_y, sequence, shift=0)</dt><dd><tt>In&nbsp;a&nbsp;first&nbsp;time,&nbsp;only&nbsp;start&nbsp;and&nbsp;stop&nbsp;codons&nbsp;are&nbsp;displayed.<br>
+If&nbsp;pre_sequence&nbsp;=&gt;&nbsp;Introns&nbsp;are&nbsp;biasing&nbsp;all&nbsp;the&nbsp;phasing.<br>
+Need&nbsp;to&nbsp;remove&nbsp;introns&nbsp;from&nbsp;codons&nbsp;?<br>
+Or&nbsp;trying&nbsp;to&nbsp;introduce&nbsp;the&nbsp;phase.</tt></dd></dl>
+ <dl><dt><a name="-add_nucleotides_glyph"><strong>add_nucleotides_glyph</strong></a>(bokeh_figure, max_y, sequence, shift=0)</dt><dd><tt>Generate&nbsp;quads&nbsp;for&nbsp;the&nbsp;sequence.</tt></dd></dl>
+ <dl><dt><a name="-envs_plot"><strong>envs_plot</strong></a>(meta_start, meta_stop, bamfile, title='Envs', only_total=False, palette=['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc'], colors=['blue', 'red'])</dt><dd><tt>Return&nbsp;a&nbsp;figure&nbsp;with&nbsp;both&nbsp;meta&nbsp;start&nbsp;and&nbsp;stop&nbsp;as&nbsp;VBar.</tt></dd></dl>
+ <dl><dt><a name="-figure_from_poscov"><strong>figure_from_poscov</strong></a>(pos_cov, transcript, glyphs=['annot'], sequence='', title='Figure from pos_cov', palette=['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc'], only_total=False, color='black', max_y=None)</dt><dd><tt>Return&nbsp;a&nbsp;figure&nbsp;from&nbsp;the&nbsp;pos_cov&nbsp;dictionary.</tt></dd></dl>
+ <dl><dt><a name="-figure_splitted_signal"><strong>figure_splitted_signal</strong></a>(pos_cov, transcript, glyphs=['annot'], sequence='', title='Split frames', only_total=False, color=['blue', 'green', 'red'])</dt><dd><tt>Return&nbsp;a&nbsp;grid&nbsp;with&nbsp;the&nbsp;signal&nbsp;of&nbsp;the&nbsp;3&nbsp;frames&nbsp;splitted.</tt></dd></dl>
+ <dl><dt><a name="-frames_plot"><strong>frames_plot</strong></a>(frames_counts, bamfile, title='Frames', only_total=False, palette=['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc'], colors=['red', 'blue', 'green'])</dt><dd><tt>Plot&nbsp;the&nbsp;Kmer&nbsp;repartition&nbsp;in&nbsp;each&nbsp;region&nbsp;of&nbsp;the&nbsp;transcripts.</tt></dd></dl>
+ <dl><dt><a name="-kmers_vbar_figure"><strong>kmers_vbar_figure</strong></a>(pos_cov_df, kmers, title='VBar stacked kmers', palette=['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc'])</dt><dd><tt>Generate&nbsp;a&nbsp;figure&nbsp;with&nbsp;vbar&nbsp;for&nbsp;all&nbsp;kmers&nbsp;stacked.</tt></dd></dl>
+ <dl><dt><a name="-plot_expression"><strong>plot_expression</strong></a>(gene_counts, types=[], title='VBar')</dt><dd><tt>Plot&nbsp;VBar&nbsp;for&nbsp;each&nbsp;gene&nbsp;value&nbsp;in&nbsp;gene_counts.<br>
+Types&nbsp;is&nbsp;a&nbsp;list&nbsp;where&nbsp;type&nbsp;of&nbsp;each&nbsp;gene&nbsp;is&nbsp;defined.<br>
+NEED&nbsp;TE&nbsp;REIMPLEMENT&nbsp;TO&nbsp;TAKE&nbsp;IT&nbsp;FROM&nbsp;GFF&nbsp;TAG...</tt></dd></dl>
+ <dl><dt><a name="-regions_stats_plot"><strong>regions_stats_plot</strong></a>(regs_stats, bamfile, title='Regs_stats', only_total=False, palette=['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc'], colors=['black', 'gray', 'gray'])</dt><dd><tt>Plot&nbsp;the&nbsp;Kmer&nbsp;repartition&nbsp;in&nbsp;each&nbsp;region&nbsp;of&nbsp;the&nbsp;transcripts.</tt></dd></dl>
+ <dl><dt><a name="-total_vbar_figure"><strong>total_vbar_figure</strong></a>(pos_cov_df, title='Total VBar', color='black')</dt><dd><tt>Generate&nbsp;a&nbsp;figure&nbsp;with&nbsp;the&nbsp;total&nbsp;of&nbsp;read&nbsp;per&nbsp;position.</tt></dd></dl>
+ <dl><dt><a name="-total_vbar_figure_2"><strong>total_vbar_figure_2</strong></a>(pos_cov_df, title='Total VBar', color='black', scale=False, rpm=False, banksize=None)</dt><dd><tt>Generate&nbsp;a&nbsp;figure&nbsp;with&nbsp;the&nbsp;total&nbsp;of&nbsp;read&nbsp;per&nbsp;position.</tt></dd></dl>
+ <dl><dt><a name="-vbar_kmers_figure"><strong>vbar_kmers_figure</strong></a>(df, only_total=False, palette=['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc'], color='blue', title='VBars')</dt><dd><tt>simple&nbsp;vbar&nbsp;figure&nbsp;with&nbsp;kmers&nbsp;stacked,&nbsp;or&nbsp;total&nbsp;bars.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>APPRIS_LEVEL</strong> = 1<br>
+<strong>APPRIS_P_ALL</strong> = 'appris_principal'<br>
+<strong>APPRIS_P_LEV</strong> = 'appris_principal_1'<br>
+<strong>ATTRIBUTES</strong> = 8<br>
+<strong>BLIT</strong> = '<font color="#c040c0">\x1b</font>[3;34m'<br>
+<strong>BLITUN</strong> = '<font color="#c040c0">\x1b</font>[4;34m'<br>
+<strong>CDS</strong> = 'CDS'<br>
+<strong>CODONS_COLORS</strong> = {'ATG': 'green', 'TAA': 'red', 'TAG': 'red', 'TGA': 'red', 'other': '#d9d9d9'}<br>
+<strong>Category20</strong> = {3: ['#1f77b4', '#aec7e8', '#ff7f0e'], 4: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78'], 5: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c'], 6: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a'], 7: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728'], 8: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896'], 9: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd'], 10: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5'], 11: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b'], 12: ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c', '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5', '#8c564b', '#c49c94'], ...}<br>
+<strong>Category20c</strong> = {3: ['#3182bd', '#6baed6', '#9ecae1'], 4: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef'], 5: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d'], 6: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c'], 7: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b'], 8: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2'], 9: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354'], 10: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476'], 11: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b'], 12: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0'], ...}<br>
+<strong>END</strong> = 4<br>
+<strong>EXON</strong> = 'exon'<br>
+<strong>FRAMES_CORREL</strong> = {0: {0: 0, 1: 1, 2: 2}, 1: {0: 2, 1: 0, 2: 1}, 2: {0: 1, 1: 2, 2: 0}}<br>
+<strong>FRAMES_PAL</strong> = {0: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc'], 1: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc'], 2: ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc']}<br>
+<strong>GENE</strong> = 'gene'<br>
+<strong>GFF_COM</strong> = '#'<br>
+<strong>GFF_SEP</strong> = '<font color="#c040c0">\t</font>'<br>
+<strong>GRIT</strong> = '<font color="#c040c0">\x1b</font>[3;32m'<br>
+<strong>ID_TAG</strong> = 'ID'<br>
+<strong>INNER</strong> = 100<br>
+<strong>KMERS</strong> = ['Total']<br>
+<strong>MASK_BASE</strong> = 'N'<br>
+<strong>NA</strong> = '<font color="#c040c0">\x1b</font>[0m'<br>
+<strong>NAME_TAG</strong> = 'Name'<br>
+<strong>NT_COLORS</strong> = {'A': 'green', 'C': 'blue', 'G': 'orange', 'T': 'red'}<br>
+<strong>N_0</strong> = 0<br>
+<strong>ORDERED_REGIONS</strong> = ['UTR5', 'CDS', 'UTR3']<br>
+<strong>ORIT</strong> = '<font color="#c040c0">\x1b</font>[3;33m'<br>
+<strong>OUTER</strong> = 20<br>
+<strong>PALETTE</strong> = ['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#756bb1', '#9e9ac8', '#bcbddc']<br>
+<strong>PARENT_TAG</strong> = 'Parent'<br>
+<strong>PHASE</strong> = 7<br>
+<strong>PHASES_COLORS</strong> = {0: '#1f77b4', 1: '#2ca02c', 2: '#d62728'}<br>
+<strong>PuOr4</strong> = ['#5e3c99', '#b2abd2', '#fdb863', '#e66101']<br>
+<strong>RANK_TAG</strong> = 'exon_number'<br>
+<strong>REG_COLORS</strong> = {'CDS': '#fdb863', 'UTR3': '#b2abd2', 'UTR5': '#b2abd2'}<br>
+<strong>REIT</strong> = '<font color="#c040c0">\x1b</font>[3;31m'<br>
+<strong>SCORE</strong> = 5<br>
+<strong>SEQID</strong> = 0<br>
+<strong>SHIFT</strong> = 12<br>
+<strong>SIDE</strong> = 5<br>
+<strong>SOURCE</strong> = 1<br>
+<strong>START</strong> = 3<br>
+<strong>STRAND</strong> = 6<br>
+<strong>STRANDS_COLORS</strong> = {'+': 'black', '-': 'purple'}<br>
+<strong>STRANDS_MAP</strong> = {'+': {'ali': 0, 'ali_rev': 16, 'one': 1}, '-': {'ali': 16, 'ali_rev': 0, 'one': -1}, '.': {'one': 1}}<br>
+<strong>Spectral11</strong> = ['#5e4fa2', '#3288bd', '#66c2a5', '#abdda4', '#e6f598', '#ffffbf', '#fee08b', '#fdae61', '#f46d43', '#d53e4f', '#9e0142']<br>
+<strong>TAG_SEP</strong> = ';'<br>
+<strong>TOTAL_KEYNAME</strong> = 'Total'<br>
+<strong>TRANSCRIPT</strong> = 'transcript'<br>
+<strong>TYPE</strong> = 2<br>
+<strong>UTR</strong> = 'UTR'<br>
+<strong>UTR3</strong> = 'UTR3'<br>
+<strong>UTR5</strong> = 'UTR5'<br>
+<strong>VAL_SEP</strong> = '='<br>
+<strong>__email__</strong> = 'pierre.bertin@i2bc.paris-saclay.fr'<br>
+<strong>__license__</strong> = 'GPL'<br>
+<strong>__maintainer__</strong> = 'Pierre Bertin'<br>
+<strong>__status__</strong> = 'Development'<br>
+<strong>nan</strong> = nan<br>
+<strong>pi</strong> = 3.141592653589793<br>
+<strong>s</strong> = '<font color="#c040c0">\n</font>from loaders import Gff<font color="#c040c0">\n</font>gff_bic = Gff("/home/pb... be easy to plot a region of the genome of IGORF<font color="#c040c0">\n</font>'</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Pierre&nbsp;Bertin</td></tr></table>
+</body></html>
