@@ -7,6 +7,7 @@ import time
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 # TODO R2 strange
@@ -59,18 +60,37 @@ def get_args():
     return args
 
 
-def file_verification(parameters):
+def parameters_verification(parameters):
     gff = parameters.gff
     fasta = parameters.fasta
-    adapt = parameters.adapt
     fastq = parameters.fastq
-    if len(gff) == len(fasta) and len(fasta) == len(fastq) and len(fastq) == len(adapt):
-        print("The associations of the files are:")
-        for i in range(len(gff)):
-            print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t adaptor: {}".format(gff[i], fasta[i], fastq[i], adapt[i]))
+    if len(gff) == len(fasta) and len(fasta) == len(fastq):
+        if parameters.adapt and not parameters.cutdir:
+            adapt = parameters.adapt
+            if not len(fastq) == len(adapt):
+                print("You need to put the same number of adapters and files")
+                exit()
+            print("The associations of the files are:")
+            for i in range(len(gff)):
+                print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t adaptor: {}"
+                      .format(gff[i], fasta[i], fastq[i], adapt[i]))
+        elif not parameters.adapt and parameters.cutdir:
+            cutdir = parameters.cutdir
+            if not len(fastq) == len(cutdir):
+                print("You need to put the same number of cutadapt directories and files")
+                exit()
+            print("The associations of the files are:")
+            for i in range(len(gff)):
+                print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t cutadapt directory: {}"
+                      .format(gff[i], fasta[i], fastq[i], cutdir[i]))
+        elif not parameters.adapt and not parameters.cutdir:
+            print("You need to enter either the cutadapt directory or the adapter sequence(s)")
+            exit()
+
+
     else:
         print("There is something wrong with the number of files input. There must be the same number of gff, "
-              "fasta files, adaptors sequences and fastq files")
+              "fasta files and fastq files")
         exit()
 
 
@@ -177,7 +197,7 @@ def map_in_bam_and_count(kmer, gname, rname, cutdir):
     print("The count table has been generated for kmer {}".format(kmer))
 
 
-def mean_phase(kmer, rname, cutdir):
+def reads_phase(kmer, rname, cutdir):
     '''
 
     :param kmer:
@@ -188,6 +208,11 @@ def mean_phase(kmer, rname, cutdir):
     tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_reads.tab".format(cutdir, kmer, rname, kmer), sep='\t',
                         names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
                                "Percentage of p0", "Percentage of p1", "Percentage of p2"])
+    # Plot of the reads phase and periodicity
+    reads_phase_plot(tab,kmer,rname,100) #for CDS, we take in consideration only genes with more than 100 reads
+    reads_periodicity(kmer,rname,cutdir,"start")
+    reads_periodicity(kmer,rname,cutdir,"stop")
+
     perc = []
     # Sum of phase columns in tab
     phase0sum = tab["Number of p0"].sum()
@@ -205,23 +230,40 @@ def mean_phase(kmer, rname, cutdir):
             rname, kmer, perc[0], perc[1], perc[2]))
     return perc
 
-def distribution_phase_plot(kmer, rname, cutdir, reads_thr):
+def reads_phase_plot(table, kmer, rname, reads_thr):
+    '''
+
+    :param table:
+    :param kmer:
+    :param rname:
+    :param reads_thr:
+    :return:
+    '''
+    tab_select = table[table['Number of reads']>reads_thr]
+    plt.figure()
+    tab_select.boxplot(column=["Percentage of p0", "Percentage of p1", "Percentage of p2"])
+    # plt.show()
+    plt.savefig('./Boxplot_phases_{}_kmer{}.png'.format(rname, kmer))
+
+def reads_periodicity(kmer, rname, cutdir,type):
     '''
 
     :param kmer:
     :param rname:
     :param cutdir:
-    :param reads_thr:
     :return:
     '''
-    tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_reads.tab".format(cutdir, kmer, rname, kmer), sep='\t',
-                        names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
-                               "Percentage of p0", "Percentage of p1", "Percentage of p2"])
-    tab_select = tab[tab['Number of reads']>reads_thr]
-    plt.figure()
-    tab_select.boxplot(column=["Percentage of p0", "Percentage of p1", "Percentage of p2"])
-    # plt.show()
-    plt.savefig('./Boxplot_phases_{}_kmer{}.png'.format(rname, kmer))
+    tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_periodicity_{}.tab".format(cutdir, kmer, rname, kmer, type), sep='\t', header=None)
+    tab.columns = [str(x) for x in range(len(tab.columns))]
+    tab = tab.dropna(how="all", axis=1).drop(columns=["0"]).rename(columns={'1': "Phase"})
+    tab_agg = pd.melt(tab, id_vars=["Phase"], var_name="Position", value_name="Number of reads")
+    tab_agg["Position"] = pd.to_numeric(tab_agg["Position"]) - 2
+    tab_agg = tab_agg.groupby(["Phase", "Position"], as_index=False).sum().sort_values(["Phase", "Position"])
+    sns_plot = sns.catplot(x="Position", y="Number of reads", hue="Phase", data=tab_agg, kind="bar", height=8.27,
+                           aspect=11.7 / 8.27)
+    if type == "stop":
+        sns_plot.set_xticklabels([x for x in range(-50, 0)])
+    sns_plot.savefig("{}/kmer_{}/{}_kmer_{}_periodicity_{}.png".format(cutdir, kmer, rname, kmer,type))
 
 
 def main():
@@ -230,7 +272,7 @@ def main():
     # Get the parameters
     global parameters
     parameters = get_args()
-    file_verification(parameters)
+    parameters_verification(parameters)
     for input_file in range(len(parameters.gff)):
         kmer = range(parameters.kmer[0], parameters.kmer[1] + 1)
 
@@ -243,7 +285,6 @@ def main():
         rname = os.path.splitext(rname)[0]
 
         gff_file = parameters.gff[input_file]
-        adapt = parameters.adapt[input_file]
 
 
         # 1. Extraction of the NT sequences of the CDS
@@ -263,6 +304,7 @@ def main():
         # 3. Potential launch of cutadapt and definition of cutadapt files directory
         if not parameters.cutdir:
             cutdir = "."
+            adapt = parameters.adapt[input_file]
             print(" The cutadapt process will be launched")
             try:
                 import cutadapt
@@ -309,28 +351,38 @@ def main():
         p0_by_kmer = {}
         best_kmer = {}
         for i in kmer:
-            p0_by_kmer[i] = mean_phase(i, rname, cutdir)
+            p0_by_kmer[i] = reads_phase(i, rname, cutdir)
             if p0_by_kmer[i][0] > parameters.thr / 100:
                 best_kmer[i] = p0_by_kmer[i][0]
-            distribution_phase_plot(kmer, rname, cutdir, 100)
         print("The kmer with a mean superior to {}% are: ".format(parameters.thr), best_kmer)
-        if best_kmer:
-            kmer_choosen = int(input("Kmer to use (Please enter just the number)"))  # should be list (TODO)
-            suppress_other_directories = input("Do you want to suppress the cutadapt directories for the non chooser "
-                                               "kmer ? [Y/N]")
-            if suppress_other_directories == "Y" or suppress_other_directories == "y":
-                for i in kmer:
-                    if i != kmer_choosen:  # will be transformed in not in (TODO)
-                        os.rmdir("kmer_{}".format(i))
-        else :
+        if not best_kmer:
             print("No kmer had a mean of phase 0 superior to the threshold")
+        kmer_choosen = input(
+            "Kmer(s) to use (if you input multiple kmer, put a space between them)")  # should be list (TODO)
+        list_kmer_chooser = kmer_choosen.split()
+        suppress_other_directories = input("Do you want to suppress the cutadapt directories for the non chooser "
+                                           "kmer ? [Y/N]")
+        if suppress_other_directories == "Y" or suppress_other_directories == "y":
+            for i in kmer:
+                if i not in kmer_choosen:  # will be transformed in not in (TODO)
+                    os.rmdir("kmer_{}".format(i))
+
+
+        # 6. Find intergenic ORFs in phase 0
+        dir_IGORF = "./IGORF"
+        orftrack_cmd = "orftrack -fna {} -gff {}".format(genome_file, gff_file)
+        process_orftrack = subprocess.run(orftrack_cmd, shell=True)
+        orfget_cmd2 = "orfget -fna {} -gff mapping_orf_{}.gff -features_include nc_intergenic -o {}_intergenic -type nucl".format(
+            genome_file, gname, gname)
+        print("Extract the intergenic ORFs:")
+        print("Launch :|t", orfget_cmd)
+        process_orfget2 = subprocess.run(orfget_cmd2, shell=True)
+        for i in list_kmer_chooser:
+            classify_reads(i, fastq_file, adapt, rname, dir_IGORF)
+
 
     end_time = datetime.now()
     print("\n\n")
     print('Duration: {}'.format(end_time - start_time))
 
-
-distribution_phase_plot(26, "R3", ".", 100)
-distribution_phase_plot(27, "R3", ".", 100)
-distribution_phase_plot(28, "R3", ".", 100)
-# main()
+main()
