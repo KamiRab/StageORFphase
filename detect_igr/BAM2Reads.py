@@ -51,6 +51,7 @@ print('GFF file read \t DONE')
 
 with open(output_path+'/'+output_name+"_reads.tab","w") as wtab, open(output_path+'/'+output_name+"_periodicity_start.tab","w") as wpstart,open(output_path+'/'+output_name+"_periodicity_stop.tab","w") as wpstop:
     for x, feature in enumerate(sorted(GFF.all_features(cast_into="Igorf"))):
+
         #f_count += 1
         #print('\r\t' + str(replica_code) + '\t:\t' + str(f_count)+'\tsequences\' coverage', end = '')
         if re.match(elements_out, feature.ftype) and not re.match(elements_in, feature.ftype):
@@ -77,7 +78,7 @@ with open(output_path+'/'+output_name+"_reads.tab","w") as wtab, open(output_pat
             perc_reads_p0 = round(nb_reads_p0/nb_reads_gene*100, 2)
             perc_reads_p1 = round(nb_reads_p1/nb_reads_gene*100, 2)
             perc_reads_p2 = round(nb_reads_p2/nb_reads_gene*100, 2)
-        except ZeroDivisionError:
+        except ZeroDivisionError: #si pas de reads
             perc_reads_p0 = 0.0
             perc_reads_p1 = 0.0
             perc_reads_p2 = 0.0

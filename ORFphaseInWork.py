@@ -9,12 +9,16 @@ import subprocess
 import pandas as pd
 from datetime import datetime
 import Mapper
+import detect_igr.BAM2Reads
 
 
 # TODO R2 with good adapter
 #  TODO ORFget + extend (parametre) ==> CDS ==> periodicite
 # detectIGR : pysam, bokeh
 # TODO partial codon ?
+# install cutadapt by command "pip3 install cutadapt"
+# install bowtie by https://github.com/BenLangmead/bowtie then make then "sudo make install"
+# install samtools through downloading the current source release of samtools (www.htslib.org/download/)
 def get_args():
     """
 

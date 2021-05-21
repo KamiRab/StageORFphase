@@ -4,7 +4,7 @@ import os
 import subprocess
 from datetime import datetime
 import pandas as pd
-
+R2 = "CTGTAGGCACCATCAAT" #TODO regarder nombre de reads
 import Mapper
 def get_args():
     """
@@ -143,7 +143,7 @@ def main():
         print("We start the mapping")
 
         # a. Building of the Bowtie index from the orfget output
-        cmd_bowtie = 'bowtie-build {}_{}.nfasta {}_{}'.format(genome_name, output_name, genome_name, output_name)
+        cmd_bowtie = 'bowtie-build {} {}_{}'.format(genome_file, genome_name, output_name)
         process_bowtie = subprocess.run(cmd_bowtie, shell=True)
 
         # b->g. Create count table
