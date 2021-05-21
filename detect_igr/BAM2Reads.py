@@ -7,8 +7,10 @@ Created on Mon Jul  1 16:04:13 2019
 """
 
 
-
+# todo add parser orfget
 import os,sys
+import re
+
 from loaders import Gff
 import pickle
 import datetime
@@ -42,16 +44,24 @@ except:
 
 
 print('Read the GFF file')
-GFF =  Gff(gff_file, all_as_high=True)
+GFF = Gff(gff_file, all_as_high=True)
 print('GFF file read \t DONE')
 
 
 
 with open(output_path+'/'+output_name+"_reads.tab","w") as wtab, open(output_path+'/'+output_name+"_periodicity_start.tab","w") as wpstart,open(output_path+'/'+output_name+"_periodicity_stop.tab","w") as wpstop:
-    for x,feature in enumerate(sorted(GFF.all_features(cast_into="Igorf"))):
+    for x, feature in enumerate(sorted(GFF.all_features(cast_into="Igorf"))):
         #f_count += 1
         #print('\r\t' + str(replica_code) + '\t:\t' + str(f_count)+'\tsequences\' coverage', end = '')
-       
+        if re.match(elements_out, feature.ftype) and not re.match(elements_in, feature.ftype):
+            continue
+
+        if re.match(elements_out, feature.ftype) and re.match(elements_in, feature.ftype):
+            print("{} include and exclude at the same time!".format(feature.ftype))
+            exit()
+
+        if not re.match(elements_in, feature.ftype) and elements_in != "(all)":
+            continue
         coverage_by_frame = feature.frames_coverage(BAM)
         reads_p0 = coverage_by_frame[0]
         reads_p1 = coverage_by_frame[1]
@@ -64,10 +74,10 @@ with open(output_path+'/'+output_name+"_reads.tab","w") as wtab, open(output_pat
         nb_reads_gene = nb_reads_p0 + nb_reads_p1 + nb_reads_p2
         
         try:
-            perc_reads_p0 = round(nb_reads_p0/nb_reads_gene*100,2)
-            perc_reads_p1 = round(nb_reads_p1/nb_reads_gene*100,2)
-            perc_reads_p2 = round(nb_reads_p2/nb_reads_gene*100,2)
-        except:
+            perc_reads_p0 = round(nb_reads_p0/nb_reads_gene*100, 2)
+            perc_reads_p1 = round(nb_reads_p1/nb_reads_gene*100, 2)
+            perc_reads_p2 = round(nb_reads_p2/nb_reads_gene*100, 2)
+        except ZeroDivisionError:
             perc_reads_p0 = 0.0
             perc_reads_p1 = 0.0
             perc_reads_p2 = 0.0

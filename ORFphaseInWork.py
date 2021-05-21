@@ -1,16 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import argparse
 import concurrent.futures.process
 import errno
 import os
 import subprocess
-import time
 import pandas as pd
 from datetime import datetime
-import matplotlib.pyplot as plt
-import seaborn as sns
+import Mapper
 
 
-# TODO R2 strange
+# TODO R2 with good adapter
+#  TODO ORFget + extend (parametre) ==> CDS ==> periodicite
 # detectIGR : pysam, bokeh
 # TODO partial codon ?
 def get_args():
@@ -18,21 +20,21 @@ def get_args():
 
     :return: parameters
     """
-    parser = argparse.ArgumentParser(description='ORF phase')
+    parser = argparse.ArgumentParser(description='ORFphase')
     parser.add_argument("-gff",
                         type=str,
                         required=True,
-                        nargs="*",
+                        nargs="+",
                         help="GFF annotation file")
     parser.add_argument("-fasta",
                         type=str,
                         required=True,
-                        nargs="*",
+                        nargs="+",
                         help="FASTA file containing the genome sequence")
     parser.add_argument("-fastq",
                         type=str,
                         required=True,
-                        nargs="*",
+                        nargs="+",
                         help="FASTQ file containing the riboseq reads")
     parser.add_argument("-kmer",  # can only choose one option of kmer
                         type=int,
@@ -42,88 +44,39 @@ def get_args():
     parser.add_argument("-cutdir",
                         type=str,
                         required=False,  # if directory not given, launch cutadapt
-                        nargs="*",
+                        nargs="+",
                         help="Directory containing the directories of cutadapt files"
                         )
     parser.add_argument("-adapt",
                         type=str,
                         required=False,  # if not given, will look in list and if not found error message (TODO)
-                        nargs="*",
+                        nargs="+",
                         help="Nucleotidic sequence of the adaptor for riboseq")
     parser.add_argument("-thr",  # can only choose 1 threshold for all the files
                         type=int,
                         required=False,
+                        choices=range(0, 100),
                         nargs=1,
                         default=90,
                         help="Threshold for keeping the reads in phase 0")
+    parser.add_argument("-type",
+                        type=str,
+                        required=False,
+                        choices=["CDS", "nc_intergenic"],
+                        nargs="?",
+                        default="CDS",
+                        help="Analysis on CDS (CDS) or intergenic reads (nc_intergenic)")
     args = parser.parse_args()
     return args
 
 
-def parameters_verification(parameters):
-    gff = parameters.gff
-    fasta = parameters.fasta
-    fastq = parameters.fastq
-    if len(gff) == len(fasta) and len(fasta) == len(fastq):
-        if parameters.adapt and not parameters.cutdir:
-            adapt = parameters.adapt
-            if not len(fastq) == len(adapt):
-                print("You need to put the same number of adapters and files")
-                exit()
-            print("The associations of the files are:")
-            for i in range(len(gff)):
-                print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t adaptor: {}"
-                      .format(gff[i], fasta[i], fastq[i], adapt[i]))
-        elif not parameters.adapt and parameters.cutdir:
-            cutdir = parameters.cutdir
-            if not len(fastq) == len(cutdir):
-                print("You need to put the same number of cutadapt directories and files")
-                exit()
-            print("The associations of the files are:")
-            for i in range(len(gff)):
-                print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t cutadapt directory: {}"
-                      .format(gff[i], fasta[i], fastq[i], cutdir[i]))
-        elif not parameters.adapt and not parameters.cutdir:
-            print("You need to enter either the cutadapt directory or the adapter sequence(s)")
-            exit()
-
-
-    else:
-        print("There is something wrong with the number of files input. There must be the same number of gff, "
-              "fasta files and fastq files")
-        exit()
-
-
-def classify_reads(kmer, fastq_file, adaptor, rname, cutdir):
-    '''
-
-    :param kmer:
-    :param fastq_file:
-    :param adaptor:
-    :param rname:
-    :param cutdir:
-    :return:
-    '''
-    try:
-        os.mkdir("kmer_{}".format(str(kmer)))
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-    cutadapt_cmd = "cutadapt {} -j 1 --quality-base=33 -a {} \
--m {} -M {} -e 0.12 -o {}/kmer_{}/{}_kmer{}.fastq".format(fastq_file, adaptor, str(kmer), str(kmer), cutdir,
-                                                          str(kmer),
-                                                          rname, str(kmer))
-    print("We are cutting the reads in {}-mers".format(kmer))
-    process = subprocess.run(cutadapt_cmd, shell=True)
-
-
-# 2. Create gff file of the transcriptome
+# 2. Create gff file of the transcriptome or intergenic ORFs
 def read_multiFASTA(fasta_file):
-    '''
-
-    :param fasta_file:
-    :return:
-    '''
+    """
+    Create dictionary from fasta_file with the gene name as key and the value being the sequence
+    :param fasta_file: fasta file to read
+    :return: dictionnary
+    """
     dico = {}
     with open(fasta_file, 'r') as fasta:
         for line in fasta:
@@ -138,132 +91,24 @@ def read_multiFASTA(fasta_file):
     return (dico)
 
 
-def map_in_bam_and_count(kmer, gname, rname, cutdir):
-    '''
-
-    :param kmer:
-    :param gname:
-    :param rname:
-    :param cutdir:
-    :return:
-    '''
-
-    # Commands
-    # b. Map the reads on the transcriptome and generate a sam file
-    cmd_bowtie = "bowtie --wrapper basic-0 -v 2 -y -a -m 1 --best --strata -p 18 -x {}_CDS {}/kmer_{}/{}_kmer{}.fastq -S kmer_{}/{}_kmer{}.sam".format(
-        gname, cutdir, str(kmer), rname, str(kmer), str(kmer), rname, str(kmer))
-    # c. Transform sam into bam
-    cmd_sam_bam = "samtools view -h -b -S {}/kmer_{}/{}_kmer{}.sam > {}/kmer_{}/{}_kmer{}.bam".format(cutdir, str(kmer),
-                                                                                                      rname,
-                                                                                                      str(kmer), cutdir,
-                                                                                                      str(kmer), rname,
-                                                                                                      str(kmer))
-    # d. Sort the bam file
-    cmd_sam_sort = "samtools sort {}/kmer_{}/{}_kmer{}.bam -o {}/kmer_{}/{}_kmer{}_sorted.bam".format(cutdir, str(kmer),
-                                                                                                      rname,
-                                                                                                      str(kmer), cutdir,
-                                                                                                      str(kmer), rname,
-                                                                                                      str(kmer))
-    # e. Keep only the mapped reads
-    cmd_sam_map = "samtools view -F 4 -f 0,16 -h -b {}/kmer_{}/{}_kmer{}_sorted.bam > {}/kmer_{}/{}_kmer{}_sorted_mapped.bam".format(
-        cutdir, str(kmer), rname, str(kmer), cutdir, str(kmer), rname, str(kmer))
-    # f. Index the bam file
-    cmd_sam_index = "samtools index {}/kmer_{}/{}_kmer{}_sorted_mapped.bam".format(cutdir, str(kmer), rname, str(kmer))
-
-    # g. generate count table
-    cmd_count = "python ./detect_igr/BAM2Reads.py -bam kmer_{}/{}_kmer{}_sorted_mapped.bam -gff {}_transcriptome.gff " \
-                "-output_path kmer_{} -output_name {}_kmer_{}".format(
-        str(kmer), str(rname), str(kmer), str(gname), str(kmer), str(rname), str(kmer))
-
-    # Processes
-    print("Command launched: ", cmd_bowtie)
-    process1 = subprocess.run(cmd_bowtie, shell=True)
-
-    print("Command launched: ", cmd_sam_bam)
-    process2 = subprocess.run(cmd_sam_bam, shell=True)
-
-    print("Command launched: ", cmd_sam_sort)
-    process3 = subprocess.run(cmd_sam_sort, shell=True)
-
-    print("Command launched: ", cmd_sam_map)
-    process4 = subprocess.run(cmd_sam_map, shell=True)
-
-    print("Command launched: ", cmd_sam_index)
-    process5 = subprocess.run(cmd_sam_index, shell=True)
-
-    print("Command launched: ", cmd_count)
-    process6 = subprocess.run(cmd_count, shell=True)
-
-    print("The count table has been generated for kmer {}".format(kmer))
-
-
-def reads_phase(kmer, rname, cutdir):
-    '''
-
-    :param kmer:
-    :param rname:
-    :param cutdir:
-    :return:
-    '''
-    tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_reads.tab".format(cutdir, kmer, rname, kmer), sep='\t',
-                        names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
-                               "Percentage of p0", "Percentage of p1", "Percentage of p2"])
-    # Plot of the reads phase and periodicity
-    reads_phase_plot(tab,kmer,rname,100) #for CDS, we take in consideration only genes with more than 100 reads
-    reads_periodicity(kmer,rname,cutdir,"start")
-    reads_periodicity(kmer,rname,cutdir,"stop")
-
+def reads_phase_percentage(tab):
+    """
+    From the reads count table, give the percentage of all phases
+    :param tab: reads count table
+    :return: list of the percentage of the three phases
+    """
     perc = []
     # Sum of phase columns in tab
     phase0sum = tab["Number of p0"].sum()
     phase1sum = tab["Number of p1"].sum()
     phase2sum = tab["Number of p2"].sum()
-    sumreads = phase0sum + phase1sum + phase2sum
-    sumreads2 = tab["Number of reads"].sum()
+    sumreads = tab["Number of reads"].sum()
 
-    # List with frequency of each phase
+    # List with percentage of each phase
     perc.append(phase0sum / sumreads)
     perc.append(phase1sum / sumreads)
     perc.append(phase2sum / sumreads)
-    print(
-        "For the {}_kmer_{}, there are : \n{:.3f}% reads in phase 0 \n{:.3f}% reads in phase 1 \n{:.3f}% reads in phase 2".format(
-            rname, kmer, perc[0], perc[1], perc[2]))
     return perc
-
-def reads_phase_plot(table, kmer, rname, reads_thr):
-    '''
-
-    :param table:
-    :param kmer:
-    :param rname:
-    :param reads_thr:
-    :return:
-    '''
-    tab_select = table[table['Number of reads']>reads_thr]
-    plt.figure()
-    tab_select.boxplot(column=["Percentage of p0", "Percentage of p1", "Percentage of p2"])
-    # plt.show()
-    plt.savefig('./Boxplot_phases_{}_kmer{}.png'.format(rname, kmer))
-
-def reads_periodicity(kmer, rname, cutdir,type):
-    '''
-
-    :param kmer:
-    :param rname:
-    :param cutdir:
-    :return:
-    '''
-    tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_periodicity_{}.tab".format(cutdir, kmer, rname, kmer, type), sep='\t', header=None)
-    tab.columns = [str(x) for x in range(len(tab.columns))]
-    tab = tab.dropna(how="all", axis=1).drop(columns=["0"]).rename(columns={'1': "Phase"})
-    tab_agg = pd.melt(tab, id_vars=["Phase"], var_name="Position", value_name="Number of reads")
-    tab_agg["Position"] = pd.to_numeric(tab_agg["Position"]) - 2
-    tab_agg = tab_agg.groupby(["Phase", "Position"], as_index=False).sum().sort_values(["Phase", "Position"])
-    sns_plot = sns.catplot(x="Position", y="Number of reads", hue="Phase", data=tab_agg, kind="bar", height=8.27,
-                           aspect=11.7 / 8.27)
-    if type == "stop":
-        sns_plot.set_xticklabels([x for x in range(-50, 0)])
-    sns_plot.savefig("{}/kmer_{}/{}_kmer_{}_periodicity_{}.png".format(cutdir, kmer, rname, kmer,type))
 
 
 def main():
@@ -272,31 +117,31 @@ def main():
     # Get the parameters
     global parameters
     parameters = get_args()
-    parameters_verification(parameters)
+    Mapper.parameters_verification(parameters)
     for input_file in range(len(parameters.gff)):
         kmer = range(parameters.kmer[0], parameters.kmer[1] + 1)
 
         genome_file = parameters.fasta[input_file]
-        gname = os.path.basename(genome_file)
-        gname = os.path.splitext(gname)[0]
+        genome_name = os.path.basename(genome_file)
+        genome_name = os.path.splitext(genome_name)[0]
 
-        fastq_file = parameters.fastq[input_file]
-        rname = os.path.basename(fastq_file)
-        rname = os.path.splitext(rname)[0]
+        riboseq_file = parameters.fastq[input_file]
+        riboseq_name = os.path.basename(riboseq_file)
+        riboseq_name = os.path.splitext(riboseq_name)[0]
 
         gff_file = parameters.gff[input_file]
 
-
-        # 1. Extraction of the NT sequences of the CDS
+        # 1. Extraction of the non-translated sequences of CDS:
         orfget_cmd = "orfget -fna {} -gff {} -features_include CDS -o {}_CDS -type nucl".format(
-            genome_file, gff_file, gname)
+            genome_file, gff_file, genome_name)
         print("Extract the Transcriptome:")
-        print("Launch :|t", orfget_cmd)
+        print("Launch :\t", orfget_cmd)
         process_orfget = subprocess.run(orfget_cmd, shell=True)
 
         # 2. Generation of pseudo GFF file of the CDS transcriptome
-        transcriptome = read_multiFASTA(fasta_file=gname + "_CDS.nfasta")
-        with open(gname + "_transcriptome.gff", "w") as wgff:
+        gff_to_compare = genome_name + "_transcriptome.gff"
+        transcriptome = read_multiFASTA(fasta_file=genome_name + "_CDS.nfasta")
+        with open(gff_to_compare, "w") as wgff:
             for i in transcriptome:
                 wgff.write('{:20s}\t{}\t{:20s}\t{:d}\t{:d}\t{}\t{}\t{}\t{}\n'.format(
                     i, 'SGD', 'gene', 1, len(transcriptome[i]), '.', '+', '0', str('ID=' + i)))
@@ -304,6 +149,8 @@ def main():
         # 3. Potential launch of cutadapt and definition of cutadapt files directory
         if not parameters.cutdir:
             cutdir = "."
+            if len(parameters.adapt) == 1:
+                adapt = parameters.adapt[0]
             adapt = parameters.adapt[input_file]
             print(" The cutadapt process will be launched")
             try:
@@ -312,77 +159,74 @@ def main():
                       "The reads are cut in {}-kmers".format(parameters.kmer))
             except ImportError:
                 print('''cutadapt is not installed, please check ''')  # add link for installation
-
-            # for i in kmer:
-            #     classify_reads(i, fastq_file, adapt, rname, cutdir)
-            with concurrent.futures.process.ProcessPoolExecutor(max_workers=None) as executor:
-                executor.map(classify_reads, kmer, [fastq_file] * len(kmer), [adapt] * len(kmer),
-                             [rname] * len(kmer),[cutdir]*len(kmer))
+            for i in kmer:
+                Mapper.cut_reads(i, riboseq_file, adapt, riboseq_name, cutdir)
         else:
-            print("You entered directory(ies) for cutadapt files. No cutadapt process will be launched")
-            cutdir = parameters.cutdir[input_file]
+            print("\nYou entered directory(ies) for cutadapt files. No cutadapt process will be launched")
+            if len(parameters.cutdir) == 1:
+                cutdir = parameters.cutdir[0]
+            else :
+                cutdir = parameters.cutdir[input_file]
             for i in kmer:
                 name_dir = "{}/kmer_{}".format(cutdir, i)
                 if not os.path.isdir(name_dir):
                     print("The directories need to be named as kmer_x with x the size of the kmer.")
                     exit()
 
-        # 4.Mapping of the reads on the CDS NT sequences
+        # 4.Mapping of the reads on the non-translated sequences
         print("We start the mapping")
 
         # a. Building of the index
-        cmd_bowtie = 'bowtie-build {}_CDS.nfasta {}_CDS'.format(gname, gname)
+        cmd_bowtie = 'bowtie-build {}_CDS.nfasta {}_CDS'.format(genome_name, genome_name)
         process_bowtie = subprocess.run(cmd_bowtie, shell=True)
-        while not os.path.exists(gname + "_CDS.1.ebwt"):  # Why ?
-            time.sleep(1)
 
         # b->g. Create count table
-        try :
+        try:
             import pysam
             import bokeh
         except ImportError:
             print("You need to install the python packages pysam and bokeh")
         for i in kmer:
-            map_in_bam_and_count(i, gname, rname, cutdir)
+            Mapper.map_in_bam_and_count(i, genome_name, riboseq_name, cutdir, "CDS", gff_to_compare)
         # with concurrent.futures.process.ProcessPoolExecutor(max_workers=None) as executor:
-        #     executor.map(map_in_bam_and_count, kmer, [gname] * len(kmer), [rname] * len(kmer), [cutdir] * len(kmer))
+        #     executor.map(map_in_bam_and_count, kmer, [gname] * len(kmer), [rname] * len(kmer), [cutdir] * len(kmer),
+        #     [parameters.type]*len(kmer),[gff_to_compare]*len(kmer))
 
         # 5. Find best kmer cut to have phase 0
         p0_by_kmer = {}
         best_kmer = {}
         for i in kmer:
-            p0_by_kmer[i] = reads_phase(i, rname, cutdir)
+            tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_reads.tab".format(cutdir, i, riboseq_name, i), sep='\t',
+                                names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
+                                       "Percentage of p0", "Percentage of p1", "Percentage of p2"])
+            # Plot of the reads phase and periodicity
+            Mapper.reads_phase_plot(tab, i, riboseq_name,
+                                    100)  # for CDS, we take in consideration only genes with more than 100 reads
+            Mapper.reads_periodicity(i, riboseq_name, cutdir, "start")
+            Mapper.reads_periodicity(i, riboseq_name, cutdir, "stop")
+            p0_by_kmer[i] = reads_phase_percentage(tab)
+            print(
+                "For the {}_kmer_{}, there are : \n{:.3f}% reads in phase 0 \n{:.3f}% reads in phase 1 \n"
+                "{:.3f}% reads in phase 2".format(riboseq_name, i, p0_by_kmer[i][0],
+                                                  p0_by_kmer[i][1], p0_by_kmer[i][2]))
             if p0_by_kmer[i][0] > parameters.thr / 100:
                 best_kmer[i] = p0_by_kmer[i][0]
-        print("The kmer with a mean superior to {}% are: ".format(parameters.thr), best_kmer)
+        print("For {} the kmers with a mean superior to {}% are: ".format(riboseq_file, parameters.thr), best_kmer)
         if not best_kmer:
-            print("No kmer had a mean of phase 0 superior to the threshold")
-        kmer_choosen = input(
-            "Kmer(s) to use (if you input multiple kmer, put a space between them)")  # should be list (TODO)
-        list_kmer_chooser = kmer_choosen.split()
-        suppress_other_directories = input("Do you want to suppress the cutadapt directories for the non chooser "
-                                           "kmer ? [Y/N]")
-        if suppress_other_directories == "Y" or suppress_other_directories == "y":
-            for i in kmer:
-                if i not in kmer_choosen:  # will be transformed in not in (TODO)
-                    os.rmdir("kmer_{}".format(i))
-
-
-        # 6. Find intergenic ORFs in phase 0
-        dir_IGORF = "./IGORF"
-        orftrack_cmd = "orftrack -fna {} -gff {}".format(genome_file, gff_file)
-        process_orftrack = subprocess.run(orftrack_cmd, shell=True)
-        orfget_cmd2 = "orfget -fna {} -gff mapping_orf_{}.gff -features_include nc_intergenic -o {}_intergenic -type nucl".format(
-            genome_file, gname, gname)
-        print("Extract the intergenic ORFs:")
-        print("Launch :|t", orfget_cmd)
-        process_orfget2 = subprocess.run(orfget_cmd2, shell=True)
-        for i in list_kmer_chooser:
-            classify_reads(i, fastq_file, adapt, rname, dir_IGORF)
-
+            print("No kmer had a mean of phase 0 superior to the threshold for {}".format(riboseq_file))
+        # kmer_choosen = input(
+        #         "Kmer(s) to use (if you input multiple kmer, put a space between them)")
+        #     list_kmer_chooser = kmer_choosen.split()
+        #     # suppress_other_directories = input("Do you want to suppress the cutadapt directories for the non chooser "
+        #                                    "kmer ? [Y/N]")
+        # if suppress_other_directories == "Y" or suppress_other_directories == "y":
+        #     for i in kmer:
+        #         if i not in kmer_choosen:
+        #             os.rmdir("kmer_{}".format(i))
 
     end_time = datetime.now()
     print("\n\n")
     print('Duration: {}'.format(end_time - start_time))
+
 
 main()
