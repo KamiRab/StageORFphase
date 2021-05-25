@@ -9,8 +9,7 @@ import subprocess
 import pandas as pd
 from datetime import datetime
 import Mapper
-import detect_igr.BAM2Reads
-
+from Bam2Reads_function.BAM2Reads import BAM2Reads
 
 # TODO R2 with good adapter
 #  TODO ORFget + extend (parametre) ==> CDS ==> periodicite
@@ -115,6 +114,25 @@ def reads_phase_percentage(tab):
     return perc
 
 
+def phase_decision(cutdir, kmer, riboseq_file, riboseq_name, thr):
+    p0_by_kmer = {}
+    best_kmer = {}
+    for size in kmer:
+        tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_reads.tab".format(cutdir, size, riboseq_name, size), sep='\t',
+                            names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
+                                   "Percentage of p0", "Percentage of p1", "Percentage of p2"])
+        p0_by_kmer[size] = reads_phase_percentage(tab)
+        print(
+            "For the {}_kmer_{}, there are : \n{:.3f}% reads in phase 0 \n{:.3f}% reads in phase 1 \n"
+            "{:.3f}% reads in phase 2".format(riboseq_name, size, p0_by_kmer[size][0],
+                                              p0_by_kmer[size][1], p0_by_kmer[size][2]))
+        if p0_by_kmer[size][0] > thr / 100:
+            best_kmer[size] = p0_by_kmer[size][0]
+    print("For {} the kmers with a mean superior to {}% are: ".format(riboseq_file, thr), best_kmer)
+    if not best_kmer:
+        print("No kmer had a mean of phase 0 superior to the threshold for {}".format(riboseq_file))
+
+
 def main():
     start_time = datetime.now()
 
@@ -122,8 +140,9 @@ def main():
     global parameters
     parameters = get_args()
     Mapper.parameters_verification(parameters)
+    kmer = range(parameters.kmer[0], parameters.kmer[1] + 1)
+    thr = parameters.thr
     for input_file in range(len(parameters.gff)):
-        kmer = range(parameters.kmer[0], parameters.kmer[1] + 1)
 
         genome_file = parameters.fasta[input_file]
         genome_name = os.path.basename(genome_file)
@@ -146,9 +165,9 @@ def main():
         gff_to_compare = genome_name + "_transcriptome.gff"
         transcriptome = read_multiFASTA(fasta_file=genome_name + "_CDS.nfasta")
         with open(gff_to_compare, "w") as wgff:
-            for i in transcriptome:
+            for size in transcriptome:
                 wgff.write('{:20s}\t{}\t{:20s}\t{:d}\t{:d}\t{}\t{}\t{}\t{}\n'.format(
-                    i, 'SGD', 'gene', 1, len(transcriptome[i]), '.', '+', '0', str('ID=' + i)))
+                    size, 'SGD', 'gene', 1, len(transcriptome[size]), '.', '+', '0', str('ID=' + size)))
 
         # 3. Potential launch of cutadapt and definition of cutadapt files directory
         if not parameters.cutdir:
@@ -163,16 +182,16 @@ def main():
                       "The reads are cut in {}-kmers".format(parameters.kmer))
             except ImportError:
                 print('''cutadapt is not installed, please check ''')  # add link for installation
-            for i in kmer:
-                Mapper.cut_reads(i, riboseq_file, adapt, riboseq_name, cutdir)
+            for size in kmer:
+                Mapper.cut_reads(size, riboseq_file, adapt, riboseq_name, cutdir)
         else:
             print("\nYou entered directory(ies) for cutadapt files. No cutadapt process will be launched")
             if len(parameters.cutdir) == 1:
                 cutdir = parameters.cutdir[0]
             else :
                 cutdir = parameters.cutdir[input_file]
-            for i in kmer:
-                name_dir = "{}/kmer_{}".format(cutdir, i)
+            for size in kmer:
+                name_dir = "{}/kmer_{}".format(cutdir, size)
                 if not os.path.isdir(name_dir):
                     print("The directories need to be named as kmer_x with x the size of the kmer.")
                     exit()
@@ -190,43 +209,24 @@ def main():
             import bokeh
         except ImportError:
             print("You need to install the python packages pysam and bokeh")
-        for i in kmer:
-            Mapper.map_in_bam_and_count(i, genome_name, riboseq_name, cutdir, "CDS", gff_to_compare)
+        for size in kmer:
+            Mapper.map2bam(size, genome_name, riboseq_name, cutdir, "CDS", gff_to_compare)
         # with concurrent.futures.process.ProcessPoolExecutor(max_workers=None) as executor:
         #     executor.map(map_in_bam_and_count, kmer, [gname] * len(kmer), [rname] * len(kmer), [cutdir] * len(kmer),
         #     [parameters.type]*len(kmer),[gff_to_compare]*len(kmer))
-
-        # 5. Find best kmer cut to have phase 0
-        p0_by_kmer = {}
-        best_kmer = {}
-        for i in kmer:
-            tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_reads.tab".format(cutdir, i, riboseq_name, i), sep='\t',
+        BAM2Reads(cutdir, riboseq_name, gff_to_compare, kmer)
+        # 5. Plotting and finding best read size to have a percentage of phase 0 superior to the threshold
+        for size in kmer:
+            tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size), sep='\t',
                                 names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
                                        "Percentage of p0", "Percentage of p1", "Percentage of p2"])
             # Plot of the reads phase and periodicity
-            Mapper.reads_phase_plot(tab, i, riboseq_name,
-                                    100)  # for CDS, we take in consideration only genes with more than 100 reads
-            Mapper.reads_periodicity(i, riboseq_name, cutdir, "start")
-            Mapper.reads_periodicity(i, riboseq_name, cutdir, "stop")
-            p0_by_kmer[i] = reads_phase_percentage(tab)
-            print(
-                "For the {}_kmer_{}, there are : \n{:.3f}% reads in phase 0 \n{:.3f}% reads in phase 1 \n"
-                "{:.3f}% reads in phase 2".format(riboseq_name, i, p0_by_kmer[i][0],
-                                                  p0_by_kmer[i][1], p0_by_kmer[i][2]))
-            if p0_by_kmer[i][0] > parameters.thr / 100:
-                best_kmer[i] = p0_by_kmer[i][0]
-        print("For {} the kmers with a mean superior to {}% are: ".format(riboseq_file, parameters.thr), best_kmer)
-        if not best_kmer:
-            print("No kmer had a mean of phase 0 superior to the threshold for {}".format(riboseq_file))
-        # kmer_choosen = input(
-        #         "Kmer(s) to use (if you input multiple kmer, put a space between them)")
-        #     list_kmer_chooser = kmer_choosen.split()
-        #     # suppress_other_directories = input("Do you want to suppress the cutadapt directories for the non chooser "
-        #                                    "kmer ? [Y/N]")
-        # if suppress_other_directories == "Y" or suppress_other_directories == "y":
-        #     for i in kmer:
-        #         if i not in kmer_choosen:
-        #             os.rmdir("kmer_{}".format(i))
+            Mapper.reads_phase_plot(tab, size, riboseq_name,
+                                    100, cutdir,
+                                    "phasing")  # for CDS, we take in consideration only genes with more than 100 reads
+            Mapper.reads_periodicity(size, riboseq_name, cutdir, "phasing", "start")
+            Mapper.reads_periodicity(size, riboseq_name, cutdir, "phasing", "stop")
+        phase_decision(cutdir, kmer, riboseq_file, riboseq_name, thr)
 
     end_time = datetime.now()
     print("\n\n")

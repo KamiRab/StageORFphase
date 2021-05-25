@@ -230,7 +230,7 @@ def main_with_multiprocess():
 
     ####### check if bowtie and samtools are installed ?
     with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
-        executor.map(map_in_bam_and_count, kmer, [gname] * len(kmer), [rname] * len(kmer), [cutdir] * len(kmer))
+        executor.map(map_in_bam_and_count, kmer, [gname] * len(kmer), [rname] * len(kmer), [cutdir] * len(kmer), ["phasage"]*len(kmer), )
 
     p0_by_kmer = {}
     best_kmer = {}

@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 def parameters_verification(parameters):
     '''
     Function to verify the number on input for fastq, fasta and gff are correct. And there is at least an adapter
@@ -26,7 +27,7 @@ def parameters_verification(parameters):
                     exit()
             print("The associations of the files are:")
             for i in range(len(gff)):
-                print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t adaptor: {}"
+                print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t adaptor: {}\n"
                       .format(gff[i], fasta[i], fastq[i], adapt[i]))
         elif not parameters.adapt and parameters.cutdir:
             cutdir = parameters.cutdir
@@ -38,7 +39,7 @@ def parameters_verification(parameters):
                     exit()
             print("The associations of the files are:")
             for i in range(len(gff)):
-                print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t cutadapt directory: {}"
+                print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t cutadapt directory: {}\n"
                       .format(gff[i], fasta[i], fastq[i], cutdir[i]))
         elif not parameters.adapt and not parameters.cutdir:
             print("You need to enter either the cutadapt directory or the adaptor sequence(s)")
@@ -47,6 +48,7 @@ def parameters_verification(parameters):
         print("There is something wrong with the number of files input. There must be the same number of gff, "
               "fasta files and fastq files")
         exit()
+
 
 def cut_reads(kmer, fastq_file, adaptor, rname, cutdir):
     """
@@ -64,16 +66,18 @@ def cut_reads(kmer, fastq_file, adaptor, rname, cutdir):
         if e.errno != errno.EEXIST:
             raise
     cutadapt_cmd = "cutadapt {} -j 1 --quality-base=33 -a {} \
--m {} -M {} -e 0.12 -o {}/kmer_{}/{}_kmer{}.fastq".format(fastq_file, adaptor, str(kmer), str(kmer), cutdir,
-                                                          str(kmer),
-                                                          rname, str(kmer))
+-m {} -M {} -e 0.12 -o {}/kmer_{}/{}_kmer_{}.fastq".format(fastq_file, adaptor, str(kmer), str(kmer), cutdir,
+                                                           str(kmer),
+                                                           rname, str(kmer))
     print("We are cutting the reads in {}-mers".format(kmer))
     process = subprocess.run(cutadapt_cmd, shell=True)
 
 
-def map_in_bam_and_count(kmer, gname, rname, cutdir, output_name, gff_to_compare):
+def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
     '''
     Map the differents sizes of reads on the genome and
+    :param gff_to_compare:
+    :param output_name:
     :param kmer:
     :param gname:
     :param rname:
@@ -81,7 +85,7 @@ def map_in_bam_and_count(kmer, gname, rname, cutdir, output_name, gff_to_compare
     :return:
     '''
 
-    file_output = "{}/kmer_{}/{}_kmer{}".format(cutdir, str(kmer), rname, str(kmer))
+    file_output = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(kmer), rname, str(kmer))
     ebwt_basename = gname + "_" + output_name
     # Commands
     # b. Map the reads on the Bowtie index and generate a sam file of the found alignments
@@ -118,14 +122,17 @@ def map_in_bam_and_count(kmer, gname, rname, cutdir, output_name, gff_to_compare
     print("Command launched: ", cmd_sam_index)
     process5 = subprocess.run(cmd_sam_index, shell=True)
 
-    print("Command launched: ", cmd_count)
-    process6 = subprocess.run(cmd_count, shell=True)
+    # print("Command launched: ", cmd_count)
+    # process6 = subprocess.run(cmd_count, shell=True)
 
-    print("The count table has been generated for kmer {}".format(kmer))
+    # print("The count table has been generated for kmer {}".format(kmer))
 
-def reads_phase_plot(table, kmer, rname, reads_thr):
+
+def reads_phase_plot(table, kmer, rname, reads_thr, cutdir, outname):
     '''
 
+    :param outname:
+    :param cutdir:
     :param table:
     :param kmer:
     :param rname:
@@ -136,10 +143,16 @@ def reads_phase_plot(table, kmer, rname, reads_thr):
     plt.figure()
     tab_select.boxplot(column=["Percentage of p0", "Percentage of p1", "Percentage of p2"])
     # plt.show()
-    plt.savefig('./Boxplot_phases_{}_CDS_kmer{}.png'.format(rname, kmer))
+    plt.savefig('{}/Boxplot_phases_{}_{}_kmer_{}.png'.format(cutdir, rname, outname, kmer))
+    plt.figure()
+    plt.title("Repartition of the phases for the reads of size {} ".format(kmer))
+    sns.set_style('whitegrid')
+    tab_select[["Percentage of p0", "Percentage of p1", "Percentage of p2"]].plot.kde(bw_method=0.5)
+    plt.savefig('{}/Density_phases_{}_{}_kmer_{}.png'.format(cutdir, rname, outname, kmer))
+    plt.close('all')
 
 
-def reads_periodicity(kmer, rname, cutdir, type):
+def reads_periodicity(kmer, rname, cutdir, outname, type):
     '''
 
     :param kmer:
@@ -147,7 +160,7 @@ def reads_periodicity(kmer, rname, cutdir, type):
     :param cutdir:
     :return:
     '''
-    tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_periodicity_{}.tab".format(cutdir, kmer, rname, kmer, type), sep='\t',
+    tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_{}_periodicity_{}.tab".format(cutdir, kmer, rname, kmer, outname, type), sep='\t',
                         header=None)
     tab.columns = [str(x) for x in range(len(tab.columns))]
     tab = tab.dropna(how="all", axis=1).drop(columns=["0"]).rename(columns={'1': "Phase"})

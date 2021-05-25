@@ -163,7 +163,7 @@ def main():
         except ImportError:
             print("You need to install the python packages pysam and bokeh")
         for i in kmer:
-            Mapper.map_in_bam_and_count(i, genome_name, riboseq_name, cutdir, parameters.type, gff_file)
+            Mapper.map2bam(i, genome_name, riboseq_name, cutdir, parameters.type, gff_file)
 
         # 5. Find best kmer cut to have phase 0
         p0_by_kmer = {}

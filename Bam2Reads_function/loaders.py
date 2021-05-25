@@ -5,11 +5,11 @@ in bioinformatics: GFF, FASTA, BED...
 """
 
 # Local
-from constants import *
-from biobjects import Gene, Feature, Cds
-from noncoding_objects import Igorf
-from gffutils import gff_tag
-from gffutils import REGEX_ID, REGEX_PARENT
+from .constants import *
+from .biobjects import Feature
+from .noncoding_objects import Igorf
+from .gffutils import gff_tag
+from .gffutils import REGEX_ID, REGEX_PARENT
 
 __author__ = "Pierre Bertin"
 __license__ = "GPL"
@@ -40,8 +40,8 @@ class Gff():
 
         # Load info
         self.load()
-        if not all_as_high: #could exclude
-            self.build_hierarchy()
+        # if not all_as_high: #could exclude
+        #     self.build_hierarchy()
 
         self.build_idname_map()
 
@@ -64,18 +64,18 @@ class Gff():
             print("%s lines without 'ID=' tag (random IDs generated)" % (no_id))
         print("%s features loaded" % (len(self._records)))
 
-    def build_hierarchy(self): #could exclude
-        """ Connect features with Parent tag. """
-        print("Building hierarchy")
-        for rec_id in self._records:
-            rec = self._records[rec_id]
-            try:
-                parent = self._records[rec.p] # Parent exists
-                parent.c[rec_id] = rec        # Add rec to its parent's childs
-            except KeyError:
-                self._highests[rec_id] = rec
-            finally:
-                parent = None   # Reset needed in case of 'except'
+    # def build_hierarchy(self): #could exclude
+    #     """ Connect features with Parent tag. """
+    #     print("Building hierarchy")
+    #     for rec_id in self._records:
+    #         rec = self._records[rec_id]
+    #         try:
+    #             parent = self._records[rec.p] # Parent exists
+    #             parent.c[rec_id] = rec        # Add rec to its parent's childs
+    #         except KeyError:
+    #             self._highests[rec_id] = rec
+    #         finally:
+    #             parent = None   # Reset needed in case of 'except'
 
     def build_idname_map(self):
         """ Build 2 dictionaries: id:names and names:id. """
@@ -104,13 +104,13 @@ class Gff():
         for feat_id in self._records:
             feat_rec = self._records[feat_id]
             feature = Feature(gffline=feat_rec.s)
-            if cast_into == "Feature":
-                yield feature
-            elif cast_into == "Igorf":
+            if cast_into == "Igorf":
                 yield Igorf(feat_rec.s)
-            elif cast_into == "Cds":
-                cds = Cds([feature], feat_rec.sd)
-                yield cds
+            # elif cast_into == "Feature":
+            #     yield feature
+            # elif cast_into == "Cds":
+            #     cds = Cds([feature], feat_rec.sd)
+            #     yield cds
             else:
                 print("highest features can be casted to Feature,"
                       " Cds and Igorf only.")
@@ -118,74 +118,74 @@ class Gff():
                 #as the feat_rec is only one genome portion.
                 return
 
-    def genes(self): #could exclude
-        """ Return a generator with all genes (Gene) in the GFF. """
-        for feat_id in self._highests:
-            feat_rec = self._highests[feat_id]
-            if feat_rec.t == GENE:
-                gene_name = self._idnames[feat_id]
-                gene = Gene(gene_name,
-                            feat_rec,
-                            transcript_keyword=self.transcript_keyword)
-                yield gene
+    # def genes(self): #could exclude
+    #     """ Return a generator with all genes (Gene) in the GFF. """
+    #     for feat_id in self._highests:
+    #         feat_rec = self._highests[feat_id]
+    #         if feat_rec.t == GENE:
+    #             gene_name = self._idnames[feat_id]
+    #             gene = Gene(gene_name,
+    #                         feat_rec,
+    #                         transcript_keyword=self.transcript_keyword)
+    #             yield gene
 
 
-    def select_gene_names_id(self, selected_genes): #could exclude
-        """ Return the Gene object for the selected IDs/Names. """
-        for g in selected_genes:
-            if g in self._namesid:
-                gene_id = self._namesid[g]
-                gene_name = g
-            elif g in self._idnames:
-                gene_id = g
-                gene_name = self._idnames[g]
-            else:
-                print("%s%s%s gene id/name not found" % (REIT, g, NA))
-                continue
-            record = self._highests[gene_id]
-            gene = Gene(gene_name,
-                        record,
-                        transcript_keyword=self.transcript_keyword)
-            yield gene
-
-    def select_gene_tags(self, **kwargs): #could exclude
-        """ Select genes depending on the tags and their values. """
-        for feat_id in self._highests:
-            keep_me = True
-            feat_rec = self._highests[feat_id]
-            if feat_rec.t == GENE:
-                gene = Gene(self._idnames[feat_id],
-                            feat_rec,
-                            transcript_keyword=self.transcript_keyword)
-                for (tag_name, tag_value) in kwargs.items():
-                    try:
-                        # Need a version where, if AT LEAST 1 tag is ok,
-                        # the gene is kept ?
-                        if gene.tags[tag_name] != tag_value:
-                            keep_me = False
-                            break
-                    except KeyError:
-                        continue # Inexistant tag
-                if not keep_me:
-                    continue
-                else:
-                    yield gene
-
-
-    def select_feature(self, feature_identifiers): #could exclude
-        """ Select the features of self._records only if they match
-        the feature_identifiers list.
-        """
-        selected_features = []
-        # Return Features ?...? StraGeRa ?
-        # Or implement something to load all feature as high,
-        # it means all feature as StraGeRa ? => Like this, all
-        # genomic arithmetic is available.
-
-    def features_summary(self): #could exclude
-        """ Return a summary of the features present in the GFF. """
-        # Need to be implement, pretty print of a summary
-        # of each features type + feature level
+    # def select_gene_names_id(self, selected_genes): #could exclude
+    #     """ Return the Gene object for the selected IDs/Names. """
+    #     for g in selected_genes:
+    #         if g in self._namesid:
+    #             gene_id = self._namesid[g]
+    #             gene_name = g
+    #         elif g in self._idnames:
+    #             gene_id = g
+    #             gene_name = self._idnames[g]
+    #         else:
+    #             print("%s%s%s gene id/name not found" % (REIT, g, NA))
+    #             continue
+    #         record = self._highests[gene_id]
+    #         gene = Gene(gene_name,
+    #                     record,
+    #                     transcript_keyword=self.transcript_keyword)
+    #         yield gene
+    #
+    # def select_gene_tags(self, **kwargs): #could exclude
+    #     """ Select genes depending on the tags and their values. """
+    #     for feat_id in self._highests:
+    #         keep_me = True
+    #         feat_rec = self._highests[feat_id]
+    #         if feat_rec.t == GENE:
+    #             gene = Gene(self._idnames[feat_id],
+    #                         feat_rec,
+    #                         transcript_keyword=self.transcript_keyword)
+    #             for (tag_name, tag_value) in kwargs.items():
+    #                 try:
+    #                     # Need a version where, if AT LEAST 1 tag is ok,
+    #                     # the gene is kept ?
+    #                     if gene.tags[tag_name] != tag_value:
+    #                         keep_me = False
+    #                         break
+    #                 except KeyError:
+    #                     continue # Inexistant tag
+    #             if not keep_me:
+    #                 continue
+    #             else:
+    #                 yield gene
+    #
+    #
+    # def select_feature(self, feature_identifiers): #could exclude
+    #     """ Select the features of self._records only if they match
+    #     the feature_identifiers list.
+    #     """
+    #     selected_features = []
+    #     # Return Features ?...? StraGeRa ?
+    #     # Or implement something to load all feature as high,
+    #     # it means all feature as StraGeRa ? => Like this, all
+    #     # genomic arithmetic is available.
+    #
+    # def features_summary(self): #could exclude
+    #     """ Return a summary of the features present in the GFF. """
+    #     # Need to be implement, pretty print of a summary
+    #     # of each features type + feature level
 
 
 class GffRecord():

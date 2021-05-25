@@ -1,24 +1,5 @@
-#!/usr/bin/env python3
 
-""" Module containing several loaders for ones of the most common file formats
-in bioinformatics: GFF, FASTA, BED...
-"""
-
-# Local
-from constants import *
-from biobjects import Gene, Feature, Cds
-from noncoding_objects import Igorf
-from gffutils import gff_tag
-from gffutils import REGEX_ID, REGEX_PARENT
-
-__author__ = "Pierre Bertin"
-__license__ = "GPL"
-__version__ = "1.0.1"
-__maintainer__ = "Pierre Bertin"
-__email__ = "pierre.bertin@i2bc.paris-saclay.fr"
-__status__ = "Development"
-
-
+TRANSCRIPT = "transcript" #from constants.py
 class Gff():
     """ Handle GFF3 loading and generate Genes objects. """
     def __init__(self, gff_file, name_tag=None, transcript_keyword=TRANSCRIPT,
@@ -40,7 +21,7 @@ class Gff():
 
         # Load info
         self.load()
-        if not all_as_high: #could exclude
+        if not all_as_high:
             self.build_hierarchy()
 
         self.build_idname_map()
@@ -64,7 +45,7 @@ class Gff():
             print("%s lines without 'ID=' tag (random IDs generated)" % (no_id))
         print("%s features loaded" % (len(self._records)))
 
-    def build_hierarchy(self): #could exclude
+    def build_hierarchy(self):
         """ Connect features with Parent tag. """
         print("Building hierarchy")
         for rec_id in self._records:
@@ -96,7 +77,7 @@ class Gff():
             self._idnames[feat_id] = feat_name
             self._namesid[feat_name] = feat_id
 
-    def all_features(self, cast_into="Feature"): #could exclude CDS/feature
+    def all_features(self, cast_into="Feature"):
         """ Return a generator to iterate over all highest features.
         Highest features can be casted in several biobjects, depending
         on the needs. Igorf added for A.Lopes project.
@@ -118,7 +99,7 @@ class Gff():
                 #as the feat_rec is only one genome portion.
                 return
 
-    def genes(self): #could exclude
+    def genes(self):
         """ Return a generator with all genes (Gene) in the GFF. """
         for feat_id in self._highests:
             feat_rec = self._highests[feat_id]
@@ -130,7 +111,7 @@ class Gff():
                 yield gene
 
 
-    def select_gene_names_id(self, selected_genes): #could exclude
+    def select_gene_names_id(self, selected_genes):
         """ Return the Gene object for the selected IDs/Names. """
         for g in selected_genes:
             if g in self._namesid:
@@ -148,7 +129,7 @@ class Gff():
                         transcript_keyword=self.transcript_keyword)
             yield gene
 
-    def select_gene_tags(self, **kwargs): #could exclude
+    def select_gene_tags(self, **kwargs):
         """ Select genes depending on the tags and their values. """
         for feat_id in self._highests:
             keep_me = True
@@ -172,7 +153,7 @@ class Gff():
                     yield gene
 
 
-    def select_feature(self, feature_identifiers): #could exclude
+    def select_feature(self, feature_identifiers):
         """ Select the features of self._records only if they match
         the feature_identifiers list.
         """
@@ -182,11 +163,10 @@ class Gff():
         # it means all feature as StraGeRa ? => Like this, all
         # genomic arithmetic is available.
 
-    def features_summary(self): #could exclude
+    def features_summary(self):
         """ Return a summary of the features present in the GFF. """
         # Need to be implement, pretty print of a summary
         # of each features type + feature level
-
 
 class GffRecord():
     """ A minimal object to save memory and time while loading. """

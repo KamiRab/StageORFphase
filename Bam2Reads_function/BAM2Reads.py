@@ -6,16 +6,17 @@ Created on Mon Jul  1 16:04:13 2019
 @author: c.papadopoulos
 """
 
-
 # todo add parser orfget
 import argparse
 import concurrent.futures.process
-import os,sys
+import os, sys
 import re
 
-from loaders import Gff
+from .loaders import Gff
 import pickle
 import datetime
+
+
 def get_args():
     """
 
@@ -46,7 +47,7 @@ def get_args():
                         help="Annotation features not to be considered (By definition is None)")
     parser.add_argument("-outpath",
                         type=str,
-                        #action='store',
+                        # action='store',
                         required=True,
                         nargs=1,
                         help="The path to save the dictionary output")
@@ -59,11 +60,13 @@ def get_args():
     args = parser.parse_args()
     return args
 
+
 def coverage_rate(coverage):
-        """ Return the rate of position with at least a read in coverage (list).
-        """
-        return round(sum((1 for x in coverage if x > 0)) / len(coverage), 5)
-        
+    """ Return the rate of position with at least a read in coverage (list).
+    """
+    return round(sum((1 for x in coverage if x > 0)) / len(coverage), 5)
+
+
 # try:
 #     BAM            =    sys.argv[sys.argv.index("-bam")+1]
 #     gff_file       =    sys.argv[sys.argv.index("-gff")+1]
@@ -87,24 +90,19 @@ def coverage_rate(coverage):
 #     exit()
 
 
-
-
-
-def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff, bam):
-    with open(file_output + "_reads.tab", "w") as wtab, open(
-            file_output + "_periodicity_start.tab", "w") as wpstart, open(
-            file_output + "_periodicity_stop.tab", "w") as wpstop:
-        for x, feature in enumerate(sorted(gff.all_features(cast_into="Igorf"))):
-            # f_count += 1
-            # print('\r\t' + str(replica_code) + '\t:\t' + str(f_count)+'\tsequences\' coverage', end = '')
-            if re.match(elements_out, feature.ftype) and not re.match(elements_in, feature.ftype):
+def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, bam, outname):
+    with open(file_output + "_" + outname + "_reads.tab", "w") as wtab, \
+            open(file_output + "_" + outname + "_periodicity_start.tab", "w") as wpstart, \
+            open(file_output + "_" + outname + "_periodicity_stop.tab", "w") as wpstop:
+        for x, feature in gff_iterator:
+            if re.search(elements_out, feature.ftype) and not re.search(elements_in, feature.ftype):
                 continue
 
-            if re.match(elements_out, feature.ftype) and re.match(elements_in, feature.ftype):
+            if re.search(elements_out, feature.ftype) and re.search(elements_in, feature.ftype):
                 print("{} include and exclude at the same time!".format(feature.ftype))
                 exit()
 
-            if not re.match(elements_in, feature.ftype) and elements_in != "(all)":
+            if not re.search(elements_in, feature.ftype) and elements_in != "(all)":
                 continue
             coverage_by_frame = feature.frames_coverage(bam)
             reads_p0 = coverage_by_frame[0]
@@ -125,8 +123,7 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff, 
                 perc_reads_p0 = 0.0
                 perc_reads_p1 = 0.0
                 perc_reads_p2 = 0.0
-
-            wtab.write("{:20s}\t{:d}\t{:d}\t{:d}\t{:d}\t{}\t{}\t{}\n".format(feature.ID, nb_reads_gene, nb_reads_p0,
+            wtab.write("{:s}\t{:d}\t{:d}\t{:d}\t{:d}\t{}\t{}\t{}\n".format(feature.ID, nb_reads_gene, nb_reads_p0,
                                                                              nb_reads_p1, nb_reads_p2, perc_reads_p0,
                                                                              perc_reads_p1, perc_reads_p2))
 
@@ -158,7 +155,8 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff, 
                     wpstop.write('{}\t'.format(reads_p2[i]))
                 wpstop.write('\n')
 
-def BAM2Reads(cutdir, rname, gff_file, kmer, elements_in=None, elements_out=None):
+
+def BAM2Reads(cutdir, rname, gff_file, kmer, outname, elements_in=None, elements_out=None):
     if elements_in is None:
         elements_in = ["all"]
     if elements_out is None:
@@ -168,25 +166,27 @@ def BAM2Reads(cutdir, rname, gff_file, kmer, elements_in=None, elements_out=None
     elements_out = "(" + ")|(".join(elements_out) + ")"
     print('Read the GFF file')
     gff = Gff(gff_file, all_as_high=True)
+    gff_iterator = enumerate(sorted(gff.all_features(cast_into="Igorf")))
     print('GFF file read \t DONE')
     with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
         for size in kmer:
-            file_output = "{}/kmer_{}/{}_kmer{}".format(cutdir, str(size), rname, str(size))
+            file_output = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(size), rname, str(size))
             bam_file = file_output + "_sorted_mapped.bam"
-            executor.submit(count_percentage_reads_to_file, file_output, elements_in, elements_out, gff, bam_file)
-
-# BAM2Reads("..", "R3", "../mapping_orf_Saccer3.gff", [27,28])
-
-parameters = get_args()
-print('Read the GFF file')
-GFF = Gff(parameters.gff, all_as_high=True)
-print('GFF file read \t DONE')
-elements_in = "(" + ")|(".join(parameters.features_include) + ")"
-elements_out = "(" + ")|(".join(parameters.features_exclude) + ")"
-file_output = parameters.outpath + "/" + parameters.outname
-
-count_percentage_reads_to_file(file_output,elements_in,elements_out,GFF,parameters.bam)
+            executor.submit(count_percentage_reads_to_file, file_output, elements_in, elements_out, gff_iterator,
+                            bam_file, outname)
 
 
+def main():
+    parameters = get_args()
+    print('Read the GFF file')
+    GFF = Gff(parameters.gff, all_as_high=True)
+    print('GFF file read \t DONE')
+    elements_in = "(" + ")|(".join(parameters.features_include) + ")"
+    elements_out = "(" + ")|(".join(parameters.features_exclude) + ")"
+    file_output = parameters.outpath + "/" + parameters.outname
+
+    count_percentage_reads_to_file(file_output, elements_in, elements_out, GFF, parameters.bam)
 
 
+if __name__ == "__main__":
+    main()
