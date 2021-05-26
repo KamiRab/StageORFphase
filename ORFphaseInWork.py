@@ -62,13 +62,6 @@ def get_args():
                         nargs=1,
                         default=90,
                         help="Threshold for keeping the reads in phase 0")
-    parser.add_argument("-type",
-                        type=str,
-                        required=False,
-                        choices=["CDS", "nc_intergenic"],
-                        nargs="?",
-                        default="CDS",
-                        help="Analysis on CDS (CDS) or intergenic reads (nc_intergenic)")
     args = parser.parse_args()
     return args
 
@@ -214,7 +207,7 @@ def main():
         # with concurrent.futures.process.ProcessPoolExecutor(max_workers=None) as executor:
         #     executor.map(map_in_bam_and_count, kmer, [gname] * len(kmer), [rname] * len(kmer), [cutdir] * len(kmer),
         #     [parameters.type]*len(kmer),[gff_to_compare]*len(kmer))
-        BAM2Reads(cutdir, riboseq_name, gff_to_compare, kmer)
+        BAM2Reads(cutdir, riboseq_name, gff_to_compare, kmer, "phasing")
         # 5. Plotting and finding best read size to have a percentage of phase 0 superior to the threshold
         for size in kmer:
             tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size), sep='\t',

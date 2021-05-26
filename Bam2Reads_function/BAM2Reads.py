@@ -94,7 +94,8 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
     with open(file_output + "_" + outname + "_reads.tab", "w") as wtab, \
             open(file_output + "_" + outname + "_periodicity_start.tab", "w") as wpstart, \
             open(file_output + "_" + outname + "_periodicity_stop.tab", "w") as wpstop:
-        for x, feature in gff_iterator:
+        for x, feature in enumerate(gff_iterator):
+            # Filtering of the features
             if re.search(elements_out, feature.ftype) and not re.search(elements_in, feature.ftype):
                 continue
 
@@ -104,17 +105,21 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
 
             if not re.search(elements_in, feature.ftype) and elements_in != "(all)":
                 continue
+
+            # Coverage of the feature in the 3 frames
             coverage_by_frame = feature.frames_coverage(bam)
             reads_p0 = coverage_by_frame[0]
             reads_p1 = coverage_by_frame[1]
             reads_p2 = coverage_by_frame[2]
 
+            # Number of reads by frame
             nb_reads_p0 = sum(coverage_by_frame[0])
             nb_reads_p1 = sum(coverage_by_frame[1])
             nb_reads_p2 = sum(coverage_by_frame[2])
 
             nb_reads_gene = nb_reads_p0 + nb_reads_p1 + nb_reads_p2
 
+            # Percentage of reads by frame
             try:
                 perc_reads_p0 = round(nb_reads_p0 / nb_reads_gene * 100, 2)
                 perc_reads_p1 = round(nb_reads_p1 / nb_reads_gene * 100, 2)
@@ -123,10 +128,13 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
                 perc_reads_p0 = 0.0
                 perc_reads_p1 = 0.0
                 perc_reads_p2 = 0.0
+
+            # Write on the reads count tab the total number of reads, the number and the percentage per phase for the feature
             wtab.write("{:s}\t{:d}\t{:d}\t{:d}\t{:d}\t{}\t{}\t{}\n".format(feature.ID, nb_reads_gene, nb_reads_p0,
                                                                              nb_reads_p1, nb_reads_p2, perc_reads_p0,
                                                                              perc_reads_p1, perc_reads_p2))
 
+            # Periodicity of the feature of length superior to 50
             if len(reads_p0) > 50:
                 # We write the periodicity of the first 50 AA positions
                 wpstart.write('{}\tp0\t'.format(feature.ID))
@@ -155,7 +163,6 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
                     wpstop.write('{}\t'.format(reads_p2[i]))
                 wpstop.write('\n')
 
-
 def BAM2Reads(cutdir, rname, gff_file, kmer, outname, elements_in=None, elements_out=None):
     if elements_in is None:
         elements_in = ["all"]
@@ -166,15 +173,19 @@ def BAM2Reads(cutdir, rname, gff_file, kmer, outname, elements_in=None, elements
     elements_out = "(" + ")|(".join(elements_out) + ")"
     print('Read the GFF file')
     gff = Gff(gff_file, all_as_high=True)
-    gff_iterator = enumerate(sorted(gff.all_features(cast_into="Igorf")))
+    gff_iterator = sorted(gff.all_features(cast_into="Igorf"))
     print('GFF file read \t DONE')
     with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
         for size in kmer:
+            file_input = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(size), rname, str(size))
+            bam_file = file_input + "_sorted_mapped.bam"
             file_output = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(size), rname, str(size))
-            bam_file = file_output + "_sorted_mapped.bam"
             executor.submit(count_percentage_reads_to_file, file_output, elements_in, elements_out, gff_iterator,
                             bam_file, outname)
-
+    # for size in kmer:
+    #     file_output = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(size), rname, str(size))
+    #     bam_file = file_output + "_sorted_mapped.bam"
+    #     count_percentage_reads_to_file(file_output,elements_in,elements_out,gff_iterator,bam_file,outname)
 
 def main():
     parameters = get_args()

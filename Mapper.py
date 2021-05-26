@@ -86,7 +86,7 @@ def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
     '''
 
     file_output = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(kmer), rname, str(kmer))
-    ebwt_basename = gname + "_" + output_name
+    ebwt_basename = gname + "_" +  output_name
     # Commands
     # b. Map the reads on the Bowtie index and generate a sam file of the found alignments
     cmd_bowtie = "bowtie --wrapper basic-0 -v 2 -y -a -m 1 --best --strata -p 18 -x {} {}.fastq " \
@@ -143,18 +143,20 @@ def reads_phase_plot(table, kmer, rname, reads_thr, cutdir, outname):
     plt.figure()
     tab_select.boxplot(column=["Percentage of p0", "Percentage of p1", "Percentage of p2"])
     # plt.show()
-    plt.savefig('{}/Boxplot_phases_{}_{}_kmer_{}.png'.format(cutdir, rname, outname, kmer))
+    plt.savefig('{}/kmer_{}/Boxplot_phases_{}_{}_kmer_{}.png'.format(cutdir, kmer, rname, outname, kmer))
     plt.figure()
     plt.title("Repartition of the phases for the reads of size {} ".format(kmer))
     sns.set_style('whitegrid')
     tab_select[["Percentage of p0", "Percentage of p1", "Percentage of p2"]].plot.kde(bw_method=0.5)
-    plt.savefig('{}/Density_phases_{}_{}_kmer_{}.png'.format(cutdir, rname, outname, kmer))
+    plt.savefig('{}/kmer_{}/Density_phases_{}_{}_kmer_{}.png'.format(cutdir, kmer, rname, outname, kmer))
     plt.close('all')
 
 
 def reads_periodicity(kmer, rname, cutdir, outname, type):
     '''
 
+    :param type:
+    :param outname:
     :param kmer:
     :param rname:
     :param cutdir:
@@ -171,4 +173,4 @@ def reads_periodicity(kmer, rname, cutdir, outname, type):
                            aspect=11.7 / 8.27)
     if type == "stop":
         sns_plot.set_xticklabels([x for x in range(-50, 0)])
-    sns_plot.savefig("{}/kmer_{}/{}_kmer_{}_periodicity_{}.png".format(cutdir, kmer, rname, kmer, type))
+    sns_plot.savefig("{}/kmer_{}/{}_kmer_{}_{}_periodicity_{}.png".format(cutdir, kmer, rname, kmer, outname, type))

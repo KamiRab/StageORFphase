@@ -8,6 +8,8 @@ import pandas as pd
 R2 = "CTGTAGGCACCATCAAT" #TODO regarder nombre de reads
 import Mapper
 from Bam2Reads_function.BAM2Reads import BAM2Reads
+
+# todo maybe just isolate the B2R/plots
 def get_args():
     """
 
@@ -159,11 +161,11 @@ def main():
 
         # a. Building of the Bowtie index from the orfget output
         if "I" in options:
-            cmd_bowtie = 'bowtie-build {} {}_{}'.format(genome_file, genome_name, output_name)
+            cmd_bowtie = 'bowtie-build {} {}_all'.format(genome_file, genome_name)
             print("Command launched: ", cmd_bowtie)
             process_bowtie = subprocess.run(cmd_bowtie, shell=True)
         else:
-            print("The name of Bowtie index files are expected to be : {}_{}".format(genome_name, output_name))
+            print("The name of Bowtie index files are expected to be : {}".format(genome_name))
 
         # b->g. Create count table
         if "M" in options:
@@ -173,7 +175,7 @@ def main():
             except ImportError:
                 print("You need to install the python packages pysam and bokeh")
             for size in kmer:
-                Mapper.map2bam(size, genome_name, riboseq_name, cutdir, output_name, gff_file)
+                Mapper.map2bam(size, genome_name, riboseq_name, cutdir, "all", gff_file)
         else:
             print("The name and path of the bam files are expected to be :"
                   "{}/kmer_n/{}_kmer_n_sorted_mapped.bam with n the size of the reads".format(cutdir, riboseq_name))
