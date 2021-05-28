@@ -84,13 +84,13 @@ def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
     :param cutdir:
     :return:
     '''
-
-    file_output = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(kmer), rname, str(kmer))
-    ebwt_basename = gname + "_" +  output_name
+    fastq_input = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(kmer), rname, str(kmer))
+    file_output = "{}/kmer_{}/{}_kmer_{}_{}".format(cutdir, str(kmer), rname, str(kmer), output_name)
+    ebwt_basename = gname + "_" + output_name
     # Commands
     # b. Map the reads on the Bowtie index and generate a sam file of the found alignments
     cmd_bowtie = "bowtie --wrapper basic-0 -v 2 -y -a -m 1 --best --strata -p 18 -x {} {}.fastq " \
-                 "-S {}.sam".format(ebwt_basename, file_output, file_output)
+                 "-S {}.sam".format(ebwt_basename, fastq_input, file_output)
     # c. Transform sam into bam file
     cmd_sam_bam = "samtools view -h -b -S {}.sam > {}.bam".format(file_output, file_output)
     # d. Sort the bam file

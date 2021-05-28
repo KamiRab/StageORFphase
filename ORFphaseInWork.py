@@ -111,7 +111,7 @@ def phase_decision(cutdir, kmer, riboseq_file, riboseq_name, thr):
     p0_by_kmer = {}
     best_kmer = {}
     for size in kmer:
-        tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_reads.tab".format(cutdir, size, riboseq_name, size), sep='\t',
+        tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size), sep='\t',
                             names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
                                    "Percentage of p0", "Percentage of p1", "Percentage of p2"])
         p0_by_kmer[size] = reads_phase_percentage(tab)
@@ -148,16 +148,16 @@ def main():
         gff_file = parameters.gff[input_file]
 
         # 1. Extraction of the non-translated sequences of CDS:
-        orfget_cmd = "orfget -fna {} -gff {} -features_include CDS -o {}_CDS -type nucl".format(
+        orfget_cmd = "orfget -fna {} -gff {} -features_include CDS -o {}_phasing -type nucl".format(
             genome_file, gff_file, genome_name)
         print("Extract the Transcriptome:")
         print("Launch :\t", orfget_cmd)
         process_orfget = subprocess.run(orfget_cmd, shell=True)
 
         # 2. Generation of pseudo GFF file of the CDS transcriptome
-        gff_to_compare = genome_name + "_transcriptome.gff"
-        transcriptome = read_multiFASTA(fasta_file=genome_name + "_CDS.nfasta")
-        with open(gff_to_compare, "w") as wgff:
+        transcriptome_gff = genome_name + "_transcriptome.gff"
+        transcriptome = read_multiFASTA(fasta_file=genome_name + "_phasing.nfasta")
+        with open(transcriptome_gff, "w") as wgff:
             for size in transcriptome:
                 wgff.write('{:20s}\t{}\t{:20s}\t{:d}\t{:d}\t{}\t{}\t{}\t{}\n'.format(
                     size, 'SGD', 'gene', 1, len(transcriptome[size]), '.', '+', '0', str('ID=' + size)))
@@ -193,7 +193,7 @@ def main():
         print("We start the mapping")
 
         # a. Building of the index
-        cmd_bowtie = 'bowtie-build {}_CDS.nfasta {}_CDS'.format(genome_name, genome_name)
+        cmd_bowtie = 'bowtie-build {}_phasing.nfasta {}_CDS'.format(genome_name, genome_name)
         process_bowtie = subprocess.run(cmd_bowtie, shell=True)
 
         # b->g. Create count table
@@ -203,11 +203,11 @@ def main():
         except ImportError:
             print("You need to install the python packages pysam and bokeh")
         for size in kmer:
-            Mapper.map2bam(size, genome_name, riboseq_name, cutdir, "CDS", gff_to_compare)
+            Mapper.map2bam(size, genome_name, riboseq_name, cutdir, "phasing", transcriptome_gff)
         # with concurrent.futures.process.ProcessPoolExecutor(max_workers=None) as executor:
         #     executor.map(map_in_bam_and_count, kmer, [gname] * len(kmer), [rname] * len(kmer), [cutdir] * len(kmer),
         #     [parameters.type]*len(kmer),[gff_to_compare]*len(kmer))
-        BAM2Reads(cutdir, riboseq_name, gff_to_compare, kmer, "phasing")
+        BAM2Reads(cutdir, riboseq_name, transcriptome_gff, kmer, "phasing")
         # 5. Plotting and finding best read size to have a percentage of phase 0 superior to the threshold
         for size in kmer:
             tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size), sep='\t',
