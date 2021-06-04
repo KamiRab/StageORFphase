@@ -6,7 +6,7 @@ Created on Mon Jul  1 16:04:13 2019
 @author: c.papadopoulos
 """
 
-# todo add parser orfget
+# todo add headers
 import argparse
 import concurrent.futures.process
 import os, sys
@@ -14,7 +14,7 @@ import re
 
 from .loaders import Gff
 import pickle
-import datetime
+from datetime import datetime
 
 
 def get_args():
@@ -94,6 +94,8 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
     with open(file_output + "_reads.tab", "w") as wtab, \
             open(file_output + "_periodicity_start.tab", "w") as wpstart, \
             open(file_output + "_periodicity_stop.tab", "w") as wpstop:
+        start = datetime.now()
+        features_found = 0
         for x, feature in enumerate(gff_iterator):
             # Filtering of the features
             if re.search(elements_out, feature.ftype) and not re.search(elements_in, feature.ftype):
@@ -105,7 +107,7 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
 
             if not re.search(elements_in, feature.ftype) and elements_in != "(all)":
                 continue
-
+            features_found += 1
             # Coverage of the feature in the 3 frames
             coverage_by_frame = feature.frames_coverage(bam)
             reads_p0 = coverage_by_frame[0]
@@ -162,6 +164,10 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
                 for i in range(len(reads_p0) - 50, len(reads_p0)):
                     wpstop.write('{}\t'.format(reads_p2[i]))
                 wpstop.write('\n')
+        end = datetime.now()
+        print("Duration : {}\n"
+              "{} features corresponding the selection.\n"
+              "The mean time per selected feature is : {}\n".format(end-start, features_found,(end-start)/features_found))
 
 
 def BAM2Reads(cutdir, rname, gff_file, kmer, outname, elements_in=None, elements_out=None):
@@ -173,23 +179,34 @@ def BAM2Reads(cutdir, rname, gff_file, kmer, outname, elements_in=None, elements
     elements_in = "(" + ")|(".join(elements_in) + ")"
     elements_out = "(" + ")|(".join(elements_out) + ")"
     print('Read the GFF file')
+    start_time_gff = datetime.now()
     gff = Gff(gff_file, all_as_high=True)
     gff_iterator = sorted(gff.all_features(cast_into="Igorf"))
+    end_time_gff = datetime.now()
+    print("\n\n")
+    print('Duration gff: {}'.format(end_time_gff - start_time_gff))
     print('GFF file read \t DONE')
-    with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
-        for size in kmer:
-            if outname == "phasing": #ORFphase
-                file_input = "{}/kmer_{}/{}_kmer_{}_phasing".format(cutdir, str(size), rname, str(size))
-            else: #ORFribomap
-                file_input = "{}/kmer_{}/{}_kmer_{}_all".format(cutdir, str(size), rname, str(size))
-            bam_file = file_input + "_sorted_mapped.bam"
-            file_output = "{}/kmer_{}/{}_kmer_{}_{}".format(cutdir, str(size), rname, str(size), outname)
-            executor.submit(count_percentage_reads_to_file, file_output, elements_in, elements_out, gff_iterator,
-                            bam_file)
-    # for size in kmer:
-    #     file_output = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(size), rname, str(size))
-    #     bam_file = file_output + "_sorted_mapped.bam"
-    #     count_percentage_reads_to_file(file_output,elements_in,elements_out,gff_iterator,bam_file,outname)
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
+    #     for size in kmer:
+    #         if outname == "phasing": #ORFphase
+    #             file_input = "{}/kmer_{}/{}_kmer_{}_phasing".format(cutdir, str(size), rname, str(size))
+    #         else: #ORFribomap
+    #             file_input = "{}/kmer_{}/{}_kmer_{}_all".format(cutdir, str(size), rname, str(size))
+    #         bam_file = file_input + "_sorted_mapped.bam"
+    #         file_output = "{}/kmer_{}/{}_kmer_{}_{}".format(cutdir, str(size), rname, str(size), outname)
+    #         executor.submit(count_percentage_reads_to_file, file_output, elements_in, elements_out, gff_iterator,
+    #                         bam_file)
+    for size in kmer:
+        if outname == "phasing":  # ORFphase
+            file_input = "{}/kmer_{}/{}_kmer_{}_phasing".format(cutdir, str(size), rname, str(size))
+        else:  # ORFribomap
+            file_input = "{}/kmer_{}/{}_kmer_{}_all".format(cutdir, str(size), rname, str(size))
+        bam_file = file_input + "_sorted_mapped.bam"
+        file_output = "{}/kmer_{}/{}_kmer_{}_{}".format(cutdir, str(size), rname, str(size), outname)
+        count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, bam_file)
+    end_time_all = datetime.now()
+    print("\n\n")
+    print('Duration b2r: {}'.format(end_time_all - start_time_gff))
 
 
 def main():
@@ -202,8 +219,7 @@ def main():
     elements_out = "(" + ")|(".join(parameters.features_exclude) + ")"
     file_output = parameters.outpath + "/" + parameters.outname
 
-    count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, parameters.bam,
-                                   parameters.outname)
+    count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, parameters.bam)
 
 
 if __name__ == "__main__":

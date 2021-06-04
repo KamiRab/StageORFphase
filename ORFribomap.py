@@ -5,9 +5,12 @@ import subprocess
 import time
 from datetime import datetime
 import pandas as pd
-R2 = "CTGTAGGCACCATCAAT" #TODO regarder nombre de reads
+
+R2 = "CTGTAGGCACCATCAAT"  # TODO regarder nombre de reads
+R3 = "TGGAATTCTCGGGTGCCAAGG"
 import Mapper
 from Bam2Reads_function.BAM2Reads import BAM2Reads
+
 
 # todo maybe just isolate the B2R/plots
 def get_args():
@@ -79,7 +82,7 @@ def get_args():
                         ''')
     parser.add_argument("-o",
                         type=str,
-                        #action='store',
+                        # action='store',
                         required=True,
                         nargs="?",
                         help="Output name of analysis file to put after the genome name. "
@@ -87,6 +90,7 @@ def get_args():
                              "the cutadapt files, the directory name of the cutadapt files will be this")
     args = parser.parse_args()
     return args
+
 
 def main():
     start_time = datetime.now()
@@ -100,36 +104,39 @@ def main():
     kmer = parameters.kmer
     output_name = parameters.o
     options = list(parameters.options)
-    for input_file in range(len(parameters.gff)):
-        genome_file = parameters.fasta[input_file]
+    for input_file in range(len(parameters.fastq)):
+        if len(parameters.fasta) == 1:
+            genome_file = parameters.fasta[0] #path to genome file
+        else:
+            genome_file = parameters.fasta[input_file]
         genome_name = os.path.basename(genome_file)
-        genome_name = os.path.splitext(genome_name)[0]
+        genome_name = os.path.splitext(genome_name)[0] #name of the genome
 
-        riboseq_file = parameters.fastq[input_file]
+        riboseq_file = parameters.fastq[input_file] #path of the fastq file
         riboseq_name = os.path.basename(riboseq_file)
-        riboseq_name = os.path.splitext(riboseq_name)[0]
+        riboseq_name = os.path.splitext(riboseq_name)[0] #name of the riboseq experience
 
-        gff_file = parameters.gff[input_file]
-
+        if len(parameters.gff) == 1:
+            gff_file = parameters.gff[0]
+        else:
+            gff_file = parameters.gff[input_file]
         # 1. Annotation of the ORFs with ORFtrack
         mapping_gff = "mapping_orf_{}.gff".format(genome_name)
-        if os.path.exists(mapping_gff):
-            print(mapping_gff + " exists, it will be used to extract the intergenic ORFs. "
-                  "If the file doesn't result from orftrack, please rename it and launch ORFphase again".format(
-                genome_name))
+        if os.path.exists(mapping_gff): #if the ORFtrack file exists already, ORFtrack is skipped
+            print(mapping_gff + " exists, it will be used to extract the intergenic ORFs. If the file doesn't result "
+                                "from orftrack, please rename it and launch ORFribomap again".format(genome_name))
         else:
             orftrack_cmd = "orftrack -fna {} -gff {}".format(genome_file, gff_file)
             print("Launch : ", orftrack_cmd)
             process_orftrack = subprocess.run(orftrack_cmd, shell=True)
 
-
-        # 3. Potential launch of cutadapt and definition of cutadapt files directory
+        # 3. Potential launch of cutadapt and definition of the directory that will contain all the analysis files
         if not parameters.cutdir:
-            if len(parameters.adapt) == 1:
+            if len(parameters.adapt) == 1: #the adaptor is used for all the files
                 adapt = parameters.adapt[0]
-            adapt = parameters.adapt[input_file]
+            adapt = parameters.adapt[input_file] #each file has its adaptor
             print(" The cutadapt process will be launched")
-            try:
+            try: #verification that cutadapt is installed
                 import cutadapt
                 print("\nNo directory for cutadapt files has been given, the cutadapt process is launching. "
                       "The reads are cut in {}-kmers".format(parameters.kmer))
@@ -137,23 +144,24 @@ def main():
                 print('''cutadapt is not installed, please install  ''')  # add link for installation
             cutdir = "./" + output_name
             try:
-                os.mkdir(cutdir)  # Create nc_intergenic directory to distinguish them from potential CDS analysis
+                os.mkdir(cutdir)  # Create outputname directory to distinguish them from potential ORFphase files
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     raise
-            for size in kmer:
+            for size in kmer: #launch of cutadapt
                 Mapper.cut_reads(size, riboseq_file, adapt, riboseq_name, cutdir)
-        else:
+        else: #there exist a directory with the the reads already trimmed and cut
             print("\nYou entered directory(ies) for cutadapt files. No cutadapt process will be launched")
             time.sleep(1)
-            cutdir = parameters.cutdir[input_file]
-            if not os.path.isdir(cutdir):
-                print("The cutdir directory doesn't exist")
-                exit()
+            if len(parameters.cutdir) == 1:
+                cutdir = parameters.cutdir[0]
+            else :
+                cutdir = parameters.cutdir[input_file]
             for size in kmer:
                 name_dir = "{}/kmer_{}".format(cutdir, size)
                 if not os.path.isdir(name_dir):
-                    print("The directories need to be named as kmer_x with x the size of the kmer.")
+                    print(name_dir + " does not exist. The directories need to be named as kmer_x with x the size of "
+                                     "the kmer. ")
                     exit()
 
         # 4.Mapping of the reads on the non-translated sequences
@@ -165,33 +173,46 @@ def main():
             print("Command launched: ", cmd_bowtie)
             process_bowtie = subprocess.run(cmd_bowtie, shell=True)
         else:
-            print("The name of Bowtie index files are expected to be : {}".format(genome_name))
+            print("The basename of Bowtie index files are expected to be : {}_all".format(genome_name))
 
-        # b->g. Create count table
+        # b->f. Mapping of the reads on the Bowtie index
         if "M" in options:
-            try:
+            try: #verification that pysam and bokeh are installed
                 import pysam
                 import bokeh
             except ImportError:
                 print("You need to install the python packages pysam and bokeh")
-            for size in kmer:
+            for size in kmer: #mapping of the reads
                 Mapper.map2bam(size, genome_name, riboseq_name, cutdir, "all", gff_file)
         else:
             print("The name and path of the bam files are expected to be :"
-                  "{}/kmer_n/{}_kmer_n_sorted_mapped.bam with n the size of the reads".format(cutdir, riboseq_name))
+                  "{}/kmer_n/{}_kmer_n_all_sorted_mapped.bam with n the size of the reads".format(cutdir, riboseq_name))
 
+        # g. Creation of the counting tables and periodicity tables
         if "B" in options:
             BAM2Reads(cutdir, riboseq_name, mapping_gff, kmer, output_name, typein, typeout)
         else:
-            print("The name and path of the counting file is expected to be :"
-                  "{}/kmer_n/{}_kmer_n_reads.tab with n the size of the reads".format(cutdir, riboseq_name))
+            print("The name and path of the counting and periodicity files are expected to be :\n"
+                  "{}/kmer_n/{}_kmer_n_{}_reads.tab with n the size of the reads\n"
+                  "{}/kmer_n/{}_kmer_n_{}_periodicity_start.tab with n the size of the reads\n"
+                  "{}/kmer_n/{}_kmer_n_{}_periodicity_stop.tab with n the size of the reads\n".format(cutdir,
+                                                                                                      riboseq_name,
+                                                                                                      output_name,
+                                                                                                      cutdir,
+                                                                                                      riboseq_name,
+                                                                                                      output_name,
+                                                                                                      cutdir,
+                                                                                                      riboseq_name,
+                                                                                                      output_name))
 
         # 5. Plotting of phasing, periodicity of the start and the stop
         if "P" in options:
             for size in kmer:
-                tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_{}_reads.tab".format(cutdir, size, riboseq_name, size, output_name), sep='\t',
-                                    names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
-                                           "Percentage of p0", "Percentage of p1", "Percentage of p2"])
+                tab = pd.read_table(
+                    "{}/kmer_{}/{}_kmer_{}_{}_reads.tab".format(cutdir, size, riboseq_name, size, output_name),
+                    sep='\t',
+                    names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
+                           "Percentage of p0", "Percentage of p1", "Percentage of p2"])
                 # Plot of the reads phase and periodicity
                 Mapper.reads_phase_plot(tab, size, riboseq_name,
                                         10, cutdir, output_name)
@@ -201,5 +222,6 @@ def main():
     end_time = datetime.now()
     print("\n\n")
     print('Duration: {}'.format(end_time - start_time))
+
 
 main()

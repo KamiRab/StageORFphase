@@ -1,6 +1,8 @@
 import errno
 import os
 import subprocess
+import sys
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -16,7 +18,11 @@ def parameters_verification(parameters):
     gff = parameters.gff
     fasta = parameters.fasta
     fastq = parameters.fastq
-    if len(gff) == len(fasta) and len(fasta) == len(fastq):
+    if len(gff) == len(fasta) and len(fasta) == len(fastq) or len(gff) == 1 or len(fasta) == 1:
+        if len(gff) == 1 and len(fastq) > 1:
+            print("Warning : you entered only one gff file, it will be used for all fastq file ")
+        if len(fasta) == 1 and len(fastq) > 1:
+            print("Warning : you entered only one fasta file, it will be used for all fastq file ")
         if parameters.adapt and not parameters.cutdir:
             adapt = parameters.adapt
             if not len(fastq) == len(adapt):
@@ -101,11 +107,6 @@ def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
     # f. Index the bam file
     cmd_sam_index = "samtools index {}_sorted_mapped.bam".format(file_output)
 
-    # g. generate count table
-    cmd_count = "python ./detect_igr/BAM2Reads.py -bam {}_sorted_mapped.bam -gff " \
-                "{} -output_path {}/kmer_{} -output_name {}_kmer_{}".format(file_output, gff_to_compare,
-                                                                            cutdir, str(kmer), rname, str(kmer))
-
     # Processes
     print("Command launched: ", cmd_bowtie)
     process1 = subprocess.run(cmd_bowtie, shell=True)
@@ -121,11 +122,6 @@ def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
 
     print("Command launched: ", cmd_sam_index)
     process5 = subprocess.run(cmd_sam_index, shell=True)
-
-    # print("Command launched: ", cmd_count)
-    # process6 = subprocess.run(cmd_count, shell=True)
-
-    # print("The count table has been generated for kmer {}".format(kmer))
 
 
 def reads_phase_plot(table, kmer, rname, reads_thr, cutdir, outname):
@@ -143,12 +139,15 @@ def reads_phase_plot(table, kmer, rname, reads_thr, cutdir, outname):
     plt.figure()
     tab_select.boxplot(column=["Percentage of p0", "Percentage of p1", "Percentage of p2"])
     # plt.show()
-    plt.savefig('{}/kmer_{}/Boxplot_phases_{}_{}_kmer_{}.png'.format(cutdir, kmer, rname, outname, kmer))
+    plt.savefig('{}/kmer_{}/{}_kmer_{}_{}_Boxplot_phases.png'.format(cutdir, kmer, rname, kmer, outname))
     plt.figure()
     plt.title("Repartition of the phases for the reads of size {} ".format(kmer))
     sns.set_style('whitegrid')
-    tab_select[["Percentage of p0", "Percentage of p1", "Percentage of p2"]].plot.kde(bw_method=0.5)
-    plt.savefig('{}/kmer_{}/Density_phases_{}_{}_kmer_{}.png'.format(cutdir, kmer, rname, outname, kmer))
+    try:
+        tab_select[["Percentage of p0", "Percentage of p1", "Percentage of p2"]].plot.kde(bw_method=0.5)
+    except ValueError as ve:
+        print("The density plot can't be generated for kmer_{} :".format(kmer), ve)
+    plt.savefig('{}/kmer_{}/{}_kmer_{}_{}_Density_phases.png'.format(cutdir, kmer, rname, kmer, outname))
     plt.close('all')
 
 
