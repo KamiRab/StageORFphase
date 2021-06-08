@@ -136,6 +136,7 @@ def phase_decision_mean(cutdir, kmer, riboseq_file, riboseq_name, thr):
     print("For {} the kmers with a mean superior to {}% are: ".format(riboseq_file, thr), best_kmer)
     if not best_kmer:
         print("No kmer had a mean of phase 0 superior to the threshold for {}".format(riboseq_file))
+    return best_kmer
 
 def phase_decision_median(cutdir, kmer, riboseq_file, riboseq_name, thr):
     p0_by_kmer = {}
@@ -168,7 +169,7 @@ def main():
     thr = parameters.thr
     options = list(parameters.options)
     best_kmer_for_all = {}
-    for input_file in range(len(parameters.gff)):
+    for input_file in range(len(parameters.fastq)):
         if len(parameters.fasta) == 1:
             genome_file = parameters.fasta[0]
         else:

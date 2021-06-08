@@ -101,19 +101,22 @@ with open("SRA_parser.tab","w") as parser:
     for tab in tabs:
         link = tab.get_attribute("href")
         tab.click()
+        # time.sleep(10)
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "ScerevisiaeDetail")))
+        # WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
         name = tab.text
+
         dic[name] = {}
         dic[name]["pmid"] = driver.find_element_by_xpath(
-            "/html/body/div[2]/div/div[2]/div[1]/div[22]/div/div[@class='tab-pane active']/table/tbody/tr[2]/td[4]/a").get_attribute(
+            "/html/body/div[2]/div/div[2]/div[1]/div[22]/div/div[@id='Scerevisiae_{}_Detail']/table/tbody/tr[2]/td[4]/a".format(name)).get_attribute(
             "href")
         dic[name]["accession"] = driver.find_element_by_xpath(
-            "/html/body/div[2]/div/div[2]/div[1]/div[22]/div/div[@class='tab-pane active']/table/tbody/tr[2]/td[2]/a").get_attribute(
+            "/html/body/div[2]/div/div[2]/div[1]/div[22]/div/div[@id='Scerevisiae_{}_Detail']/table/tbody/tr[2]/td[2]/a".format(name)).get_attribute(
             "href")
-        dic[name]["title"] = driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[1]/div[22]/div/div[@class='tab-pane active']/table/tbody/tr[1]/td[2]/a").text
+        dic[name]["title"] = driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[1]/div[22]/div/div[@id='Scerevisiae_{}_Detail']/table/tbody/tr[1]/td[2]/a".format(name)).text
         # dic[name]["strain"] = driver.find_element_by_xpath("/html/body/div[2]/div/div[2]/div[1]/div[22]/div/div[@class='tab-pane active']/table/tbody/tr[3]/td[2]").text.split(":")[1]
         strain1 = driver.find_element_by_xpath(
-            "/html/body/div[2]/div/div[2]/div[1]/div[22]/div/div[@class='tab-pane active']/table/tbody/tr[3]/td[2]").text
+            "/html/body/div[2]/div/div[2]/div[1]/div[22]/div/div[@id='Scerevisiae_{}_Detail']/table/tbody/tr[3]/td[2]".format(name).format(name)).text
         strain2 = strain1.split(":")
         try:
             strain3 = strain2[1]
@@ -136,7 +139,11 @@ with open("SRA_parser.tab","w") as parser:
             except NoSuchElementException:
                 # url = driver.find_element_by_xpath(
                 #     "//div[@class='rprt']/div[2]/div[1]/p[text()='{}']".format(dic[GSE]["title"])).get_attribute("href")
-                continue
+                try:
+                    url = driver.find_element_by_xpath("//div[@class='rprt']/div[2]/div[@class = 'supp']/p[@class = 'desc'][text()='{}']//ancestor::div[@class = 'rslt']//child::p/a".format(dic[GSE]["title"])).get_attribute("href")
+                except:
+                    url = "Not found"
+                    continue
             try:
                 driver.get(url)
             except TimeoutException:
@@ -144,22 +151,29 @@ with open("SRA_parser.tab","w") as parser:
                 driver.get(url)
         elif driver.find_element_by_tag_name("body").get_attribute("id") == "ui-ncbiexternallink-4":
             continue
-        pubmed = driver.find_element_by_id("PubMed").get_attribute("href")
+        try:
+            pubmed = driver.find_element_by_id("PubMed").get_attribute("href")
+        except NoSuchElementException:
+            pubmed = "not found"
         try:
             desc = driver.find_element_by_css_selector(".Title > h3:nth-child(2)").text
         except NoSuchElementException:
             desc = driver.find_element_by_css_selector(".Title > h2:nth-child(1)").text
-        results = driver.find_element_by_id("SRA Experiments").click()
+        results = driver.find_element_by_id("SRA Experiments").get_attribute("href")
+        driver.get(results)
         try:
             driver.find_element_by_css_selector(
                 "div.results_settings:nth-child(1) > ul:nth-child(1) > li:nth-child(2) > a:nth-child(1)").click()
             WebDriverWait(driver, 100000).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, "input[type='radio'][value='200']")))
             driver.find_element_by_css_selector("input[type='radio'][value='200']").click()
+        except NoSuchElementException :
+            print("One page ? " + results)
             # nr_pages = driver.find_element_by_id("pageno").get_attribute("last")
             # print(nr_pages)
-            next_page = driver.find_elements_by_css_selector("div.pagination:nth-child(1) > a:nth-child(4)")
-            links = []
+        next_page = driver.find_elements_by_css_selector("div.pagination:nth-child(1) > a:nth-child(4)")
+        links = []
+        try:
             links = links + [x.get_attribute("href") for x in
                              driver.find_elements_by_xpath("//*[contains(@class, 'title')]/a")]
             while (len(next_page) > 0):
@@ -179,9 +193,12 @@ with open("SRA_parser.tab","w") as parser:
                 driver.get(sra_link)
             sra = [x.text for x in
                    driver.find_elements_by_xpath("//a[contains(@href, 'trace.ncbi.nlm.nih.gov/Traces/sra/?run=')]")]
-            desc2 = \
+            try:
+                desc2 = \
                 driver.find_elements_by_css_selector("div.sra-full-data:nth-child(3) > span:nth-child(1)")[
                     0].text.split("\n")[0]
+            except IndexError:
+                desc2 = "to look"
             for i in sra:
                 parser.write(
                     "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(GSE,url,pmid,strain,pubmed,desc,desc2,sra_link,i))
