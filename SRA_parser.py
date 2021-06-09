@@ -105,6 +105,8 @@ with open("SRA_parser.tab","w") as parser:
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "ScerevisiaeDetail")))
         # WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
         name = tab.text
+        if "GSE" not in name:
+            print("Hmm")
 
         dic[name] = {}
         dic[name]["pmid"] = driver.find_element_by_xpath(
@@ -199,7 +201,7 @@ with open("SRA_parser.tab","w") as parser:
                     0].text.split("\n")[0]
             except IndexError:
                 desc2 = "to look"
-            for i in sra:
-                parser.write(
-                    "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(GSE,url,pmid,strain,pubmed,desc,desc2,sra_link,i))
+            # for i in sra:
+            #     parser.write(
+            #         "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(GSE,url,pmid,strain,pubmed,desc,desc2,sra_link,i))
 
