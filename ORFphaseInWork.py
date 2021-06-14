@@ -11,6 +11,7 @@ from datetime import datetime
 import Mapper
 from Bam2Reads_function.BAM2Reads import BAM2Reads
 
+
 # TODO R2 with good adapter
 #  TODO ORFget + extend (parametre) ==> CDS ==> periodicite
 # detectIGR : pysam, bokeh
@@ -121,41 +122,64 @@ def reads_phase_percentage(tab):
 
 def phase_decision_mean(cutdir, kmer, riboseq_file, riboseq_name, thr):
     p0_by_kmer = {}
-    best_kmer = {}
+    kmer_over_thr = {}
+    best_size = {0: [0, 0], 1: [0, 0], 2: [0, 0]}
     for size in kmer:
-        tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size), sep='\t',
+        tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size),
+                            sep='\t',
                             names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
                                    "Percentage of p0", "Percentage of p1", "Percentage of p2"])
         p0_by_kmer[size] = reads_phase_percentage(tab)
-        print(
-            "For the {}_kmer_{}, there are : \n{:.3f}% reads in phase 0 \n{:.3f}% reads in phase 1 \n"
-            "{:.3f}% reads in phase 2".format(riboseq_name, size, p0_by_kmer[size][0],
-                                              p0_by_kmer[size][1], p0_by_kmer[size][2]))
+        # print(
+        #     "For the {}_kmer_{}, there are : \n{:.3f}% reads in phase 0 \n{:.3f}% reads in phase 1 \n"
+        #     "{:.3f}% reads in phase 2".format(riboseq_name, size, p0_by_kmer[size][0],
+        #                                       p0_by_kmer[size][1], p0_by_kmer[size][2]))
         if p0_by_kmer[size][0] > thr / 100:
-            best_kmer[size] = p0_by_kmer[size][0]
-    print("For {} the kmers with a mean superior to {}% are: ".format(riboseq_file, thr), best_kmer)
-    if not best_kmer:
-        print("No kmer had a mean of phase 0 superior to the threshold for {}".format(riboseq_file))
-    return best_kmer
+            kmer_over_thr[size] = p0_by_kmer[size][0]
+        for phase in range(3):
+            if p0_by_kmer[size][phase] > best_size[phase][1]:
+                best_size[phase] = [size, p0_by_kmer[size][phase]]
+    print("For {} the kmers with a mean superior to {}% are: ".format(riboseq_name, thr), kmer_over_thr)
+    if not kmer_over_thr:
+        print("No kmer had a mean of phase 0 superior to the threshold for {}".format(riboseq_name))
+    return [kmer_over_thr, best_size]
+
 
 def phase_decision_median(cutdir, kmer, riboseq_file, riboseq_name, thr):
     p0_by_kmer = {}
-    best_kmer = {}
+    kmer_over_thr = {}
+    best_size = {0: [0, 0], 1: [0, 0], 2: [0, 0]}
+    median={}
     for size in kmer:
-        tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size), sep='\t',
+        median[size]= []
+        tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size),
+                            sep='\t',
                             names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
                                    "Percentage of p0", "Percentage of p1", "Percentage of p2"])
-        p0_by_kmer[size] = reads_phase_percentage(tab)
-        print(
-            "For the {}_kmer_{}, there are : \n{:.3f}% reads in phase 0 \n{:.3f}% reads in phase 1 \n"
-            "{:.3f}% reads in phase 2".format(riboseq_name, size, p0_by_kmer[size][0],
-                                              p0_by_kmer[size][1], p0_by_kmer[size][2]))
-        if p0_by_kmer[size][0] > thr / 100:
-            best_kmer[size] = p0_by_kmer[size][0]
-    print("For {} the kmers with a mean superior to {}% are: ".format(riboseq_file, thr), best_kmer)
-    if not best_kmer:
-        print("No kmer had a mean of phase 0 superior to the threshold for {}".format(riboseq_file))
-    return best_kmer
+        # Sum of phase columns in tab
+        phase0sum = tab["Number of p0"].sum()
+        phase1sum = tab["Number of p1"].sum()
+        phase2sum = tab["Number of p2"].sum()
+        sumreads = tab["Number of reads"].sum()
+
+        # List with percentage of each phase
+        median[size].append(phase0sum / sumreads)
+        median[size].append(phase1sum / sumreads)
+        median[size].append(phase2sum / sumreads)
+        # print(
+        #     "For the {}_kmer_{}, there are : \n{:.3f}% reads in phase 0 \n{:.3f}% reads in phase 1 \n"
+        #     "{:.3f}% reads in phase 2".format(riboseq_name, size, p0_by_kmer[size][0],
+        #                                       p0_by_kmer[size][1], p0_by_kmer[size][2]))
+        if median[size][0] > thr / 100:
+            kmer_over_thr[size] = median[size][0]
+        for phase in range(3):
+            if median[size][phase] > best_size[phase][1]:
+                best_size[phase] = [size, median[size][phase]]
+    print("For {} the kmers with a mediaan superior to {}% are: ".format(riboseq_name, thr), kmer_over_thr)
+    print("The best size for {} for each phase is:".format(riboseq_name), best_size)
+    if not kmer_over_thr:
+        print("No kmer had a mediaan of phase 0 superior to the threshold for {}".format(riboseq_name))
+    return [kmer_over_thr, best_size]
 
 
 def main():
@@ -168,7 +192,8 @@ def main():
     kmer = range(parameters.kmer[0], parameters.kmer[1] + 1)
     thr = parameters.thr
     options = list(parameters.options)
-    best_kmer_for_all = {}
+    best_kmer_over_thr = {}
+    GSE = "GSE34082"
     for input_file in range(len(parameters.fastq)):
         if len(parameters.fasta) == 1:
             genome_file = parameters.fasta[0]
@@ -193,10 +218,9 @@ def main():
         else:
             orfget_cmd = "orfget -fna {} -gff {} -features_include CDS -o {}_phasing -type nucl".format(
                 genome_file, gff_file, genome_name)
-            print("Extract the Transcriptome:")
-            print("Launch :\t", orfget_cmd)
-            process_orfget = subprocess.run(orfget_cmd, shell=True)
-
+            # print("Extract the Transcriptome:")
+            # print("Launch :\t", orfget_cmd)
+            process_orfget = subprocess.run(orfget_cmd, shell=True, stdout=subprocess.DEVNULL)
 
         # 2. Generation of pseudo GFF file of the CDS transcriptome
         transcriptome_gff = genome_name + "_transcriptome.gff"
@@ -215,12 +239,13 @@ def main():
             cutdir = "."
             if len(parameters.adapt) == 1:
                 adapt = parameters.adapt[0]
-            adapt = parameters.adapt[input_file]
-            print("\nThe cutadapt process will be launched")
+            else :
+                adapt = parameters.adapt[input_file]
+            # print("\nThe cutadapt process will be launched")
             try:
                 import cutadapt
-                print("\nNo directory for cutadapt files has been given, the cutadapt process is launching. "
-                      "The reads are cut in {}-kmers".format(parameters.kmer))
+                # print("\nNo directory for cutadapt files has been given, the cutadapt process is launching. "
+                #       "The reads are cut in {}-kmers".format(parameters.kmer))
             except ImportError:
                 print('''cutadapt is not installed''')
             with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
@@ -229,10 +254,10 @@ def main():
             # for size in kmer:
             #     Mapper.cut_reads(size, riboseq_file, adapt, riboseq_name, cutdir)
         else:
-            print("\nYou entered directory(ies) for cutadapt files. No cutadapt process will be launched")
+            # print("\nYou entered directory(ies) for cutadapt files. No cutadapt process will be launched")
             if len(parameters.cutdir) == 1:
                 cutdir = parameters.cutdir[0]
-            else :
+            else:
                 cutdir = parameters.cutdir[input_file]
             for size in kmer:
                 name_dir = "{}/kmer_{}".format(cutdir, size)
@@ -241,13 +266,14 @@ def main():
                     exit()
 
         # 4.Mapping of the reads on the non-translated sequences
-        print("We start the mapping")
 
         # a. Building of the index
+        print("We start the mapping")
         if "I" in options:
             cmd_bowtie = 'bowtie-build {}_phasing.nfasta {}_phasing'.format(genome_name, genome_name)
-            print("Command launched: ", cmd_bowtie)
-            process_bowtie = subprocess.run(cmd_bowtie, shell=True)
+            # print("Command launched: ", cmd_bowtie)
+            # process_bowtie = subprocess.run(cmd_bowtie, shell=True)
+            process_bowtie = subprocess.run(cmd_bowtie, shell=True, stdout=subprocess.DEVNULL)
         else:
             print("The basename of Bowtie index files are expected to be : {}_phasing".format(genome_name))
 
@@ -275,7 +301,8 @@ def main():
         # 5. Plotting and finding best read size to have a percentage of phase 0 superior to the threshold
         if "P" in options:
             for size in kmer:
-                tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size), sep='\t',
+                tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_phasing_reads.tab".format(cutdir, size, riboseq_name, size),
+                                    sep='\t',
                                     names=["ID", "Number of reads", "Number of p0", "Number of p1", "Number of p2",
                                            "Percentage of p0", "Percentage of p1", "Percentage of p2"])
                 # Plot of the reads phase and periodicity
@@ -284,11 +311,24 @@ def main():
                                         "phasing")  # for CDS, we take in consideration only genes with more than 100 reads
                 Mapper.reads_periodicity(size, riboseq_name, cutdir, "phasing", "start")
                 Mapper.reads_periodicity(size, riboseq_name, cutdir, "phasing", "stop")
-        best_kmer_for_all[riboseq_name] = phase_decision_mean(cutdir, kmer, riboseq_file, riboseq_name, thr)
-    print(best_kmer_for_all)
+        best_kmer_over_thr[riboseq_name] = phase_decision_mean(cutdir, kmer, riboseq_file, riboseq_name, thr)[1]
+        best_median_over_thr = phase_decision_median(cutdir, kmer, riboseq_file, riboseq_name, thr)[0]
+        best_median_by_phase = phase_decision_median(cutdir, kmer, riboseq_file, riboseq_name, thr)[1]
+        if not os.path.isfile("best_median_size_polyA.tab"):
+            with open("best_median_size_polyA.tab", "w") as median_tab:
+                median_tab.write("GSE\tRiboseq\tPhase\tSize\tMedian\n")
+        else:
+            with open("best_median_size_polyA.tab", "a") as median_tab:
+                for phase in range(3):
+                    median_tab.write(
+                        "{}\t{}\t{}\t{}\t{}\n".format(GSE, riboseq_name, phase,
+                                                    best_median_by_phase[phase][0], best_median_by_phase[phase][1]))
+    print("#########!!", best_kmer_over_thr)
+
+    # print("best_kmer_for_all)
     end_time = datetime.now()
-    print("\n\n")
-    print('Duration: {}'.format(end_time - start_time))
+    # print("\n\n")
+    # print('Duration: {}'.format(end_time - start_time))
 
 
 main()

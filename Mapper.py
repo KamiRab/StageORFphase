@@ -21,18 +21,21 @@ def parameters_verification(parameters):
     if len(gff) == len(fasta) and len(fasta) == len(fastq) or len(gff) == 1 or len(fasta) == 1:
         if len(gff) == 1 and len(fastq) > 1:
             print("Warning : you entered only one gff file, it will be used for all fastq file ")
+            gff = gff * len(fastq)
         if len(fasta) == 1 and len(fastq) > 1:
             print("Warning : you entered only one fasta file, it will be used for all fastq file ")
+            fasta = fasta * len(fastq)
         if parameters.adapt and not parameters.cutdir:
             adapt = parameters.adapt
             if not len(fastq) == len(adapt):
                 if len(adapt) == 1:
                     print("You have given only one adaptor. All the fastq are considered as having the same adaptor")
+                    adapt = adapt*len(fastq)
                 else:
                     print("You need to put the same number of adapters and files")
                     exit()
             print("The associations of the files are:")
-            for i in range(len(gff)):
+            for i in range(len(fastq)):
                 print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t adaptor: {}\n"
                       .format(gff[i], fasta[i], fastq[i], adapt[i]))
         elif not parameters.adapt and parameters.cutdir:
@@ -44,7 +47,7 @@ def parameters_verification(parameters):
                     print("You need to put the same number of cutadapt directories as files")
                     exit()
             print("The associations of the files are:")
-            for i in range(len(gff)):
+            for i in range(len(fastq)):
                 print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t cutadapt directory: {}\n"
                       .format(gff[i], fasta[i], fastq[i], cutdir[i]))
         elif not parameters.adapt and not parameters.cutdir:
@@ -75,8 +78,8 @@ def cut_reads(kmer, fastq_file, adaptor, rname, cutdir):
 -m {} -M {} -e 0.12 -o {}/kmer_{}/{}_kmer_{}.fastq".format(fastq_file, adaptor, str(kmer), str(kmer), cutdir,
                                                            str(kmer),
                                                            rname, str(kmer))
-    print("We are cutting the reads in {}-mers".format(kmer))
-    process = subprocess.run(cutadapt_cmd, shell=True)
+    # print("We are cutting the reads in {}-mers".format(kmer))
+    process = subprocess.run(cutadapt_cmd, shell=True, stdout=subprocess.DEVNULL)
 
 
 def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
@@ -108,20 +111,20 @@ def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
     cmd_sam_index = "samtools index {}_sorted_mapped.bam".format(file_output)
 
     # Processes
-    print("Command launched: ", cmd_bowtie)
-    process1 = subprocess.run(cmd_bowtie, shell=True)
+    # print("Command launched: ", cmd_bowtie)
+    process1 = subprocess.run(cmd_bowtie, shell=True, stdout=subprocess.DEVNULL)
 
-    print("Command launched: ", cmd_sam_bam)
-    process2 = subprocess.run(cmd_sam_bam, shell=True)
+    # print("Command launched: ", cmd_sam_bam)
+    process2 = subprocess.run(cmd_sam_bam, shell=True, stdout=subprocess.DEVNULL)
 
-    print("Command launched: ", cmd_sam_sort)
-    process3 = subprocess.run(cmd_sam_sort, shell=True)
+    # print("Command launched: ", cmd_sam_sort)
+    process3 = subprocess.run(cmd_sam_sort, shell=True, stdout=subprocess.DEVNULL)
 
-    print("Command launched: ", cmd_sam_map)
-    process4 = subprocess.run(cmd_sam_map, shell=True)
+    # print("Command launched: ", cmd_sam_map)
+    process4 = subprocess.run(cmd_sam_map, shell=True, stdout=subprocess.DEVNULL)
 
-    print("Command launched: ", cmd_sam_index)
-    process5 = subprocess.run(cmd_sam_index, shell=True)
+    # print("Command launched: ", cmd_sam_index)
+    process5 = subprocess.run(cmd_sam_index, shell=True, stdout=subprocess.DEVNULL)
 
 
 def reads_phase_plot(table, kmer, rname, reads_thr, cutdir, outname):
