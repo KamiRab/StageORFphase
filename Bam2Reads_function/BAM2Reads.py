@@ -93,9 +93,12 @@ def coverage_rate(coverage):
 def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, bam):
     with open(file_output + "_reads.tab", "w") as wtab, \
             open(file_output + "_periodicity_start.tab", "w") as wpstart, \
-            open(file_output + "_periodicity_stop.tab", "w") as wpstop:
+            open(file_output + "_periodicity_stop.tab", "w") as wpstop, \
+            open(file_output+ "_periodicity_all.txt","w") as wper:
         start = datetime.now()
         features_found = 0
+        wtab.write("ID\tNumber reads\tNumber p0\tNumber p1\tNumber p2\t"
+                   "Perc. p0\tPerc. p1\tPerc. p2\n")
         for x, feature in enumerate(gff_iterator):
             # Filtering of the features
             if re.search(elements_out, feature.ftype) and not re.search(elements_in, feature.ftype):
@@ -136,6 +139,10 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
                                                                            nb_reads_p1, nb_reads_p2, perc_reads_p0,
                                                                            perc_reads_p1, perc_reads_p2))
 
+            #Periodicity of the feature of all length
+            for aa in range(len(reads_p0)):
+                wper.write("{}\t{}\t{}\t{}\t{}\n".format(feature.ID, aa+1, reads_p0[aa], reads_p1[aa], reads_p2[aa]))
+
             # Periodicity of the feature of length superior to 50
             if len(reads_p0) > 50:
                 # We write the periodicity of the first 50 AA positions
@@ -165,12 +172,10 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
                     wpstop.write('{}\t'.format(reads_p2[i]))
                 wpstop.write('\n')
         end = datetime.now()
-        print("Duration : {}\n"
-              "{} features corresponding the selection.\n"
-              "The mean time per selected feature is : {}\n".format(end-start, features_found,(end-start)/features_found))
+    return "Duration : {}\n {} features corresponding the selection.\nThe mean time per selected feature is : {}\n".format(end-start, features_found,(end-start)/features_found)
 
 
-def BAM2Reads(cutdir, rname, gff_file, kmer, outname, elements_in=None, elements_out=None):
+def BAM2Reads(rname, gff_file, kmer, outname, elements_in=None, elements_out=None):
     if elements_in is None:
         elements_in = ["all"]
     if elements_out is None:
@@ -183,8 +188,8 @@ def BAM2Reads(cutdir, rname, gff_file, kmer, outname, elements_in=None, elements
     gff = Gff(gff_file, all_as_high=True)
     gff_iterator = sorted(gff.all_features(cast_into="Igorf"))
     end_time_gff = datetime.now()
-    print("\n\n")
-    print('Duration gff: {}'.format(end_time_gff - start_time_gff))
+    output_log = ""
+    output_log = output_log+ 'Duration gff: {}'.format(end_time_gff - start_time_gff)
     print('GFF file read \t DONE')
     # with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
     #     for size in kmer:
@@ -198,15 +203,14 @@ def BAM2Reads(cutdir, rname, gff_file, kmer, outname, elements_in=None, elements
     #                         bam_file)
     for size in kmer:
         if outname == "phasing":  # ORFphase
-            file_input = "{}/kmer_{}/{}_kmer_{}_phasing".format(cutdir, str(size), rname, str(size))
+            file_input = "./kmer_{}/{}_kmer_{}_phasing".format(str(size), rname, str(size))
         else:  # ORFribomap
-            file_input = "{}/kmer_{}/{}_kmer_{}_all".format(cutdir, str(size), rname, str(size))
+            file_input = "./kmer_{}/{}_kmer_{}_all".format(str(size), rname, str(size))
         bam_file = file_input + "_sorted_mapped.bam"
-        file_output = "{}/kmer_{}/{}_kmer_{}_{}".format(cutdir, str(size), rname, str(size), outname)
-        count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, bam_file)
+        file_output = "./kmer_{}/{}_kmer_{}_{}".format(str(size), rname, str(size), outname)
+        output_log = output_log + "Kmer : {}\n".format(size)+count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, bam_file)
     end_time_all = datetime.now()
-    print("\n\n")
-    print('Duration b2r: {}'.format(end_time_all - start_time_gff))
+    return output_log+ '\n\nDuration b2r: {}'.format(end_time_all - start_time_gff)
 
 
 def main():
@@ -219,7 +223,7 @@ def main():
     elements_out = "(" + ")|(".join(parameters.features_exclude) + ")"
     file_output = parameters.outpath + "/" + parameters.outname
 
-    count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, parameters.bam)
+    return count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, parameters.bam)
 
 
 if __name__ == "__main__":

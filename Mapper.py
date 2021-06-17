@@ -43,6 +43,7 @@ def parameters_verification(parameters):
             if not len(fastq) == len(cutdir):
                 if len(cutdir) == 1:
                     print("You have given only one cutadapt directory. All the cutadapt results have to be inside")
+                    cutdir = cutdir * len(fastq)
                 else:
                     print("You need to put the same number of cutadapt directories as files")
                     exit()
@@ -59,7 +60,7 @@ def parameters_verification(parameters):
         exit()
 
 
-def cut_reads(kmer, fastq_file, adaptor, rname, cutdir):
+def cut_reads(kmer, fastq_file, adaptor, rname):
     """
     Use cutadapt to trim the 3' adapter and filtering the reads to have only of one size
     :param kmer: filtering sizes
@@ -70,22 +71,23 @@ def cut_reads(kmer, fastq_file, adaptor, rname, cutdir):
     :return:
     """
     try:
-        os.mkdir("{}/kmer_{}".format(cutdir, str(kmer)))
+        os.mkdir("./kmer_{}".format(str(kmer)))
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
     cutadapt_cmd = "cutadapt {} -j 1 --quality-base=33 -a {} \
--m {} -M {} -e 0.12 -o {}/kmer_{}/{}_kmer_{}.fastq".format(fastq_file, adaptor, str(kmer), str(kmer), cutdir,
+-m {} -M {} -e 0.12 -o ./kmer_{}/{}_kmer_{}.fastq".format(fastq_file, adaptor, str(kmer), str(kmer),
                                                            str(kmer),
                                                            rname, str(kmer))
     # print("We are cutting the reads in {}-mers".format(kmer))
-    process = subprocess.run(cutadapt_cmd, shell=True, stdout=subprocess.DEVNULL)
+    process = subprocess.run(cutadapt_cmd, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
+    return process.stdout
 
 
-def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
+
+def map2bam(kmer, gname, rname, output_name):
     '''
-    Map the differents sizes of reads on the genome and
-    :param gff_to_compare:
+    Map the differents sizes of reads on the genome and creates bam file
     :param output_name:
     :param kmer:
     :param gname:
@@ -93,8 +95,8 @@ def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
     :param cutdir:
     :return:
     '''
-    fastq_input = "{}/kmer_{}/{}_kmer_{}".format(cutdir, str(kmer), rname, str(kmer))
-    file_output = "{}/kmer_{}/{}_kmer_{}_{}".format(cutdir, str(kmer), rname, str(kmer), output_name)
+    fastq_input = "./kmer_{}/{}_kmer_{}".format(str(kmer), rname, str(kmer))
+    file_output = "./kmer_{}/{}_kmer_{}_{}".format(str(kmer), rname, str(kmer), output_name)
     ebwt_basename = gname + "_" + output_name
     # Commands
     # b. Map the reads on the Bowtie index and generate a sam file of the found alignments
@@ -112,22 +114,23 @@ def map2bam(kmer, gname, rname, cutdir, output_name, gff_to_compare):
 
     # Processes
     # print("Command launched: ", cmd_bowtie)
-    process1 = subprocess.run(cmd_bowtie, shell=True, stdout=subprocess.DEVNULL)
+    process1 = subprocess.run(cmd_bowtie, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
 
-    # print("Command launched: ", cmd_sam_bam)
-    process2 = subprocess.run(cmd_sam_bam, shell=True, stdout=subprocess.DEVNULL)
+    print("Command launched: ", cmd_sam_bam)
+    process2 = subprocess.run(cmd_sam_bam, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
 
-    # print("Command launched: ", cmd_sam_sort)
-    process3 = subprocess.run(cmd_sam_sort, shell=True, stdout=subprocess.DEVNULL)
+    print("Command launched: ", cmd_sam_sort)
+    process3 = subprocess.run(cmd_sam_sort, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
 
-    # print("Command launched: ", cmd_sam_map)
-    process4 = subprocess.run(cmd_sam_map, shell=True, stdout=subprocess.DEVNULL)
+    print("Command launched: ", cmd_sam_map)
+    process4 = subprocess.run(cmd_sam_map, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
 
-    # print("Command launched: ", cmd_sam_index)
-    process5 = subprocess.run(cmd_sam_index, shell=True, stdout=subprocess.DEVNULL)
+    print("Command launched: ", cmd_sam_index)
+    process5 = subprocess.run(cmd_sam_index, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
+    return process1.stdout+process2.stdout+process3.stdout+process4.stdout+process5.stdout
 
 
-def reads_phase_plot(table, kmer, rname, reads_thr, cutdir, outname):
+def reads_phase_plot(table, kmer, rname, reads_thr, outname):
     '''
 
     :param outname:
@@ -138,23 +141,23 @@ def reads_phase_plot(table, kmer, rname, reads_thr, cutdir, outname):
     :param reads_thr:
     :return:
     '''
-    tab_select = table[table['Number of reads'] > reads_thr]
+    tab_select = table[table['Number reads'] > reads_thr]
     plt.figure()
-    tab_select.boxplot(column=["Percentage of p0", "Percentage of p1", "Percentage of p2"])
+    tab_select.boxplot(column=["Perc. p0", "Perc. p1", "Perc. p2"])
     # plt.show()
-    plt.savefig('{}/kmer_{}/{}_kmer_{}_{}_Boxplot_phases.png'.format(cutdir, kmer, rname, kmer, outname))
+    plt.savefig('./kmer_{}/{}_kmer_{}_{}_Boxplot_phases.png'.format(kmer, rname, kmer, outname))
     plt.figure()
     plt.title("Repartition of the phases for the reads of size {} ".format(kmer))
     sns.set_style('whitegrid')
     try:
-        tab_select[["Percentage of p0", "Percentage of p1", "Percentage of p2"]].plot.kde(bw_method=0.5)
+        tab_select[["Perc. p0", "Perc. p1", "Perc. p2"]].plot.kde(bw_method=0.5)
     except ValueError as ve:
         print("The density plot can't be generated for kmer_{} :".format(kmer), ve)
-    plt.savefig('{}/kmer_{}/{}_kmer_{}_{}_Density_phases.png'.format(cutdir, kmer, rname, kmer, outname))
+    plt.savefig('./kmer_{}/{}_kmer_{}_{}_Density_phases.png'.format(kmer, rname, kmer, outname))
     plt.close('all')
 
 
-def reads_periodicity(kmer, rname, cutdir, outname, type):
+def reads_periodicity(kmer, rname, outname, type):
     '''
 
     :param type:
@@ -164,7 +167,7 @@ def reads_periodicity(kmer, rname, cutdir, outname, type):
     :param cutdir:
     :return:
     '''
-    tab = pd.read_table("{}/kmer_{}/{}_kmer_{}_{}_periodicity_{}.tab".format(cutdir, kmer, rname, kmer, outname, type), sep='\t',
+    tab = pd.read_table("./kmer_{}/{}_kmer_{}_{}_periodicity_{}.tab".format(kmer, rname, kmer, outname, type), sep='\t',
                         header=None)
     tab.columns = [str(x) for x in range(len(tab.columns))]
     tab = tab.dropna(how="all", axis=1).drop(columns=["0"]).rename(columns={'1': "Phase"})
@@ -175,4 +178,4 @@ def reads_periodicity(kmer, rname, cutdir, outname, type):
                            aspect=11.7 / 8.27)
     if type == "stop":
         sns_plot.set_xticklabels([x for x in range(-50, 0)])
-    sns_plot.savefig("{}/kmer_{}/{}_kmer_{}_{}_periodicity_{}.png".format(cutdir, kmer, rname, kmer, outname, type))
+    sns_plot.savefig("./kmer_{}/{}_kmer_{}_{}_periodicity_{}.png".format(kmer, rname, kmer, outname, type))
