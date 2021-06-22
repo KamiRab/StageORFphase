@@ -25,6 +25,7 @@ def parameters_verification(parameters):
         if len(fasta) == 1 and len(fastq) > 1:
             print("Warning : you entered only one fasta file, it will be used for all fastq file ")
             fasta = fasta * len(fastq)
+
         if parameters.adapt and not parameters.cutdir:
             adapt = parameters.adapt
             if not len(fastq) == len(adapt):
@@ -38,7 +39,10 @@ def parameters_verification(parameters):
             for i in range(len(fastq)):
                 print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t adaptor: {}\n"
                       .format(gff[i], fasta[i], fastq[i], adapt[i]))
-        elif not parameters.adapt and parameters.cutdir:
+        elif not parameters.adapt and not parameters.cutdir:
+            print("You need to enter either the cutadapt directory or the adaptor sequence(s)")
+            exit()
+        else:
             cutdir = parameters.cutdir
             if not len(fastq) == len(cutdir):
                 if len(cutdir) == 1:
@@ -51,9 +55,6 @@ def parameters_verification(parameters):
             for i in range(len(fastq)):
                 print("GFF: {} \tFASTA: {}\tFASTAQ: {}\t cutadapt directory: {}\n"
                       .format(gff[i], fasta[i], fastq[i], cutdir[i]))
-        elif not parameters.adapt and not parameters.cutdir:
-            print("You need to enter either the cutadapt directory or the adaptor sequence(s)")
-            exit()
     else:
         print("There is something wrong with the number of files input. There must be the same number of gff, "
               "fasta files and fastq files")
@@ -79,13 +80,14 @@ def cut_reads(kmer, fastq_file, adaptor, rname):
 -m {} -M {} -e 0.12 -o ./kmer_{}/{}_kmer_{}.fastq".format(fastq_file, adaptor, str(kmer), str(kmer),
                                                            str(kmer),
                                                            rname, str(kmer))
+    print("Command launched: ", cutadapt_cmd)
     # print("We are cutting the reads in {}-mers".format(kmer))
     process = subprocess.run(cutadapt_cmd, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
     return process.stdout
 
 
 
-def map2bam(kmer, gname, rname, output_name):
+def map2bam(cutdir, kmer, gname, rname, output_name):
     '''
     Map the differents sizes of reads on the genome and creates bam file
     :param output_name:
@@ -95,7 +97,7 @@ def map2bam(kmer, gname, rname, output_name):
     :param cutdir:
     :return:
     '''
-    fastq_input = "./kmer_{}/{}_kmer_{}".format(str(kmer), rname, str(kmer))
+    fastq_input = "{}/kmer_{}/{}_kmer_{}".format(cutdir,str(kmer), rname, str(kmer))
     file_output = "./kmer_{}/{}_kmer_{}_{}".format(str(kmer), rname, str(kmer), output_name)
     ebwt_basename = gname + "_" + output_name
     # Commands
@@ -113,7 +115,7 @@ def map2bam(kmer, gname, rname, output_name):
     cmd_sam_index = "samtools index {}_sorted_mapped.bam".format(file_output)
 
     # Processes
-    # print("Command launched: ", cmd_bowtie)
+    print("Command launched: ", cmd_bowtie)
     process1 = subprocess.run(cmd_bowtie, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
 
     print("Command launched: ", cmd_sam_bam)

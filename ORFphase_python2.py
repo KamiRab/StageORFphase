@@ -2,19 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-# import concurrent.futures.process
-# import errno
+import concurrent.futures.process
+import errno
 import os
-# import pathlib
 import subprocess
 import pandas as pd
 from datetime import datetime
-import Mapper
+import Mapper_python2
 from Bam2Reads_function.BAM2Reads import BAM2Reads
 
 
-# ORFget/ORFtrack
-# Bam2r : pysam, bokeh
+# TODO R2 with good adapter
+#  TODO ORFget + extend (parametre) ==> CDS ==> periodicite
+# detectIGR : pysam, bokeh
+# TODO partial codon ?
 # install cutadapt by command "pip3 install cutadapt"
 # install bowtie by https://github.com/BenLangmead/bowtie then make then "sudo make install"
 # install samtools through downloading the current source release of samtools (www.htslib.org/download/)
@@ -77,6 +78,50 @@ def get_args():
     return args
 
 
+try:
+    from subprocess import CompletedProcess
+except ImportError:
+    # Python 2
+
+    class CompletedProcess:
+
+        def __init__(self, args, returncode, stdout=None, stderr=None):
+            self.args = args
+            self.returncode = returncode
+            self.stdout = stdout
+            self.stderr = stderr
+
+        def check_returncode(self):
+            if self.returncode != 0:
+                err = subprocess.CalledProcessError(self.returncode, self.args, output=self.stdout)
+                raise err
+            return self.returncode
+
+
+    def sp_run(*popenargs, **kwargs):
+        input = kwargs.pop("input", None)
+        check = kwargs.pop("handle", False)
+        if input is not None:
+            if 'stdin' in kwargs:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = subprocess.PIPE
+        process = subprocess.Popen(*popenargs, **kwargs)
+        try:
+            outs, errs = process.communicate(input)
+        except:
+            process.kill()
+            process.wait()
+            raise
+        returncode = process.poll()
+        if check and returncode:
+            raise subprocess.CalledProcessError(returncode, popenargs, output=outs)
+        return CompletedProcess(popenargs, returncode, stdout=outs, stderr=errs)
+
+
+    subprocess.run = sp_run
+    # ^ This monkey patch allows it work on Python 2 or 3 the same way
+
+
 # 2. Create gff file of the transcriptome or intergenic ORFs
 def read_multiFASTA(fasta_file):
     """
@@ -95,7 +140,7 @@ def read_multiFASTA(fasta_file):
             else:
                 seq = line.strip().replace("*", "")
                 dico[name] = dico[name] + seq
-    return dico
+    return (dico)
 
 
 def reads_phase_percentage(tab):
@@ -112,9 +157,9 @@ def reads_phase_percentage(tab):
     sumreads = tab["Number reads"].sum()
 
     # List with percentage of each phase
-    perc.append(phase0sum / sumreads*100)
-    perc.append(phase1sum / sumreads*100)
-    perc.append(phase2sum / sumreads*100)
+    perc.append(phase0sum / sumreads * 100)
+    perc.append(phase1sum / sumreads * 100)
+    perc.append(phase2sum / sumreads * 100)
     return perc
 
 
@@ -143,12 +188,11 @@ def main():
 
     # Get the parameters
     parameters = get_args()
-    Mapper.parameters_verification(parameters)
+    Mapper_python2.parameters_verification(parameters)
     kmer = range(parameters.kmer[0], parameters.kmer[1] + 1)
     reads_thr = parameters.thr
     options = list(parameters.options)
     for input_file in range(len(parameters.fastq)):
-        start_time_input = datetime.now()
         if len(parameters.fasta) == 1:
             genome_file = parameters.fasta[0]
         else:
@@ -173,9 +217,8 @@ def main():
             else:
                 orfget_cmd = "orfget -fna {} -gff {} -features_include CDS -o {}_phasing -type nucl".format(
                     genome_file, gff_file, genome_name)
-                process_orfget = subprocess.run(orfget_cmd, shell=True, universal_newlines=True, stdout=subprocess.PIPE)
+                process_orfget = subprocess.Popen(orfget_cmd, shell=True, universal_newlines=True)
                 # process_orfget = subprocess.run(orfget_cmd, shell=True)
-                log.write(process_orfget.stdout)
 
             # 2. Generation of pseudo GFF file of the CDS transcriptome
             transcriptome_gff = genome_name + "_transcriptome.gff"
@@ -192,23 +235,22 @@ def main():
 
             # 3. Potential launch of cutadapt and definition of cutadapt files directory
             if not parameters.cutdir:
-                cutdir = "."
                 if len(parameters.adapt) == 1:
                     adapt = parameters.adapt[0]
                 else:
                     adapt = parameters.adapt[input_file]
                 print("\nThe cutadapt process will be launched")
                 try:
+                    import cutadapt
                     print("\nNo directory for cutadapt files has been given, the cutadapt process is launching. "
                           "The reads are cut in {}-kmers".format(parameters.kmer))
-                    for size in kmer:
-                        log.write(Mapper.cut_reads(size, riboseq_file, adapt, riboseq_name))
                 except ImportError:
-                    print('''cutadapt seems to not be installed''')
+                    print('''cutadapt is not installed''')
                 # with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
                 #     for size in kmer:
-                #         executor.submit(Mapper.cut_reads, size, riboseq_file, adapt, riboseq_name)
-
+                #         executor.submit(Mapper_python2.cut_reads, size, riboseq_file, adapt, riboseq_name)
+                for size in kmer:
+                    Mapper_python2.cut_reads(size, riboseq_file, adapt, riboseq_name)
             else:
                 print("\nYou entered directory(ies) for cutadapt files. No cutadapt process will be launched")
                 if len(parameters.cutdir) == 1:
@@ -229,9 +271,9 @@ def main():
                 cmd_bowtie = 'bowtie-build {}_phasing.nfasta {}_phasing'.format(genome_name, genome_name)
                 print("Command launched: ", cmd_bowtie)
                 # process_bowtie = subprocess.run(cmd_bowtie, shell=True)
-                process_bowtie = subprocess.run(cmd_bowtie, shell=True, universal_newlines=True, capture_output=True)
-                print(process_bowtie.stderr)
-                log.write(process_bowtie.stdout)
+                process_bowtie = subprocess.Popen(cmd_bowtie, shell=True, universal_newlines=True,
+                                                  stdout=subprocess.PIPE)
+
             else:
                 print("The basename of Bowtie index files are expected to be : {}_phasing".format(genome_name))
 
@@ -243,7 +285,7 @@ def main():
                 except ImportError:
                     print("You need to install the python packages pysam and bokeh")
                 for size in kmer:
-                    log.write(Mapper.map2bam(cutdir, size, genome_name, riboseq_name, "phasing"))
+                    Mapper_python2.map2bam(cutdir, size, genome_name, riboseq_name, "phasing")
             else:
                 print("The name and path of the bam files are expected to be :"
                       "./kmer_n/{}_kmer_n_sorted_mapped.bam with n the size of the reads".format(riboseq_name))
@@ -264,16 +306,12 @@ def main():
                     tab = pd.read_table("./kmer_{}/{}_kmer_{}_phasing_reads.tab".format(size, riboseq_name, size),
                                         sep='\t')
                     # Plot of the reads phase and periodicity
-                    print("Phasing plot for kmer {}".format(size))
-                    Mapper.reads_phase_plot(tab, size, riboseq_name,
+                    Mapper_python2.reads_phase_plot(tab, size, riboseq_name,
                                             reads_thr,
                                             "phasing")
-                    print("Periodicity plots for kmer {}".format(size))
-                    Mapper.reads_periodicity(size, riboseq_name, "phasing", "start")
-                    Mapper.reads_periodicity(size, riboseq_name, "phasing", "stop")
+                    Mapper_python2.reads_periodicity(size, riboseq_name, "phasing", "start")
+                    Mapper_python2.reads_periodicity(size, riboseq_name, "phasing", "stop")
             phase_decision_mean_median(kmer, riboseq_name, reads_thr)
-            end_time_input = datetime.now()
-            log.write("Duration for {} :{}".format(riboseq_name, end_time_input-start_time_input))
     end_time = datetime.now()
     print("\n\n")
     print('Duration: {}'.format(end_time - start_time))

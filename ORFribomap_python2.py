@@ -13,6 +13,49 @@ R3 = "TGGAATTCTCGGGTGCCAAGG"
 
 
 # todo maybe just isolate the B2R/plots
+try:
+    from subprocess import CompletedProcess
+except ImportError:
+    # Python 2
+
+    class CompletedProcess:
+
+        def __init__(self, args, returncode, stdout=None, stderr=None):
+            self.args = args
+            self.returncode = returncode
+            self.stdout = stdout
+            self.stderr = stderr
+
+        def check_returncode(self):
+            if self.returncode != 0:
+                err = subprocess.CalledProcessError(self.returncode, self.args, output=self.stdout)
+                raise err
+            return self.returncode
+
+
+    def sp_run(*popenargs, **kwargs):
+        input = kwargs.pop("input", None)
+        check = kwargs.pop("handle", False)
+        if input is not None:
+            if 'stdin' in kwargs:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = subprocess.PIPE
+        process = subprocess.Popen(*popenargs, **kwargs)
+        try:
+            outs, errs = process.communicate(input)
+        except:
+            process.kill()
+            process.wait()
+            raise
+        returncode = process.poll()
+        if check and returncode:
+            raise subprocess.CalledProcessError(returncode, popenargs, output=outs)
+        return CompletedProcess(popenargs, returncode, stdout=outs, stderr=errs)
+
+
+    subprocess.run = sp_run
+    # ^ This monkey patch allows it work on Python 2 or 3 the same way
+
 def get_args():
     """
 
@@ -191,7 +234,7 @@ def main():
                     log.write(Mapper.map2bam(cutdir,size, genome_name, riboseq_name, "all"))
             else:
                 print("The name and path of the bam files are expected to be :"
-                      "./kmer_n/{}_kmer_n_all_sorted_mapped.bam with n the size of the reads".format(riboseq_name))
+                      "{}/kmer_n/{}_kmer_n_all_sorted_mapped.bam with n the size of the reads".format(cutdir, riboseq_name))
 
             # g. Creation of the counting tables and periodicity tables
             if "B" in options:
@@ -199,12 +242,15 @@ def main():
                 log.write(BAM2Reads(riboseq_name, mapping_gff, kmer, output_name, typein, typeout))
             else:
                 print("The name and path of the counting and periodicity files are expected to be :\n"
-                      "./kmer_n/{}_kmer_n_{}_reads.tab with n the size of the reads\n"
-                      "./kmer_n/{}_kmer_n_{}_periodicity_start.tab with n the size of the reads\n"
-                      "./kmer_n/{}_kmer_n_{}_periodicity_stop.tab with n the size of the reads\n".format(riboseq_name,
-                                                                                                          output_name,
+                      "{}/kmer_n/{}_kmer_n_{}_reads.tab with n the size of the reads\n"
+                      "{}/kmer_n/{}_kmer_n_{}_periodicity_start.tab with n the size of the reads\n"
+                      "{}/kmer_n/{}_kmer_n_{}_periodicity_stop.tab with n the size of the reads\n".format(cutdir,
                                                                                                           riboseq_name,
                                                                                                           output_name,
+                                                                                                          cutdir,
+                                                                                                          riboseq_name,
+                                                                                                          output_name,
+                                                                                                          cutdir,
                                                                                                           riboseq_name,
                                                                                                           output_name))
 
@@ -212,7 +258,7 @@ def main():
             if "P" in options:
                 for size in kmer:
                     tab = pd.read_table(
-                        "./kmer_{}/{}_kmer_{}_{}_reads.tab".format(size, riboseq_name, size, output_name),
+                        "{}/kmer_{}/{}_kmer_{}_{}_reads.tab".format(cutdir, size, riboseq_name, size, output_name),
                         sep='\t')
                     # Plot of the reads phase and periodicity
                     Mapper.reads_phase_plot(tab, size, riboseq_name,

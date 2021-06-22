@@ -67,34 +67,11 @@ def coverage_rate(coverage):
     return round(sum((1 for x in coverage if x > 0)) / len(coverage), 5)
 
 
-# try:
-#     BAM            =    sys.argv[sys.argv.index("-bam")+1]
-#     gff_file       =    sys.argv[sys.argv.index("-gff")+1]
-#     output_path    =    sys.argv[sys.argv.index("-output_path")+1]
-#     output_name    =    sys.argv[sys.argv.index("-output_name")+1]
-# except:
-#     print('''
-#     This is my usefull help!!!
-#
-#     You need to give some inputs first:
-#         -replicas_path : The path where ALL the .bam files of riboseq are stored
-#         -gff           : The GFF annotation file of your regions of interest
-#         -output_path   : The path to save the dictionary output
-#         -output_name   : The name you want your output to have!!!
-#                          ATTENTION!!!
-#                          The name will not be Exectly as you give it:
-#                              it will have also the date of generation & will
-#                              look like:
-#                                  NAME_yyyy_mm_dd.fapick
-#     ''')
-#     exit()
-
-
 def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_iterator, bam):
     with open(file_output + "_reads.tab", "w") as wtab, \
             open(file_output + "_periodicity_start.tab", "w") as wpstart, \
             open(file_output + "_periodicity_stop.tab", "w") as wpstop, \
-            open(file_output+ "_periodicity_all.txt","w") as wper:
+            open(file_output+ "_periodicity_all.tab","w") as wper:
         start = datetime.now()
         features_found = 0
         wtab.write("ID\tNumber reads\tNumber p0\tNumber p1\tNumber p2\t"
@@ -191,16 +168,6 @@ def BAM2Reads(rname, gff_file, kmer, outname, elements_in=None, elements_out=Non
     output_log = ""
     output_log = output_log+ 'Duration gff: {}'.format(end_time_gff - start_time_gff)
     print('GFF file read \t DONE')
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
-    #     for size in kmer:
-    #         if outname == "phasing": #ORFphase
-    #             file_input = "{}/kmer_{}/{}_kmer_{}_phasing".format(cutdir, str(size), rname, str(size))
-    #         else: #ORFribomap
-    #             file_input = "{}/kmer_{}/{}_kmer_{}_all".format(cutdir, str(size), rname, str(size))
-    #         bam_file = file_input + "_sorted_mapped.bam"
-    #         file_output = "{}/kmer_{}/{}_kmer_{}_{}".format(cutdir, str(size), rname, str(size), outname)
-    #         executor.submit(count_percentage_reads_to_file, file_output, elements_in, elements_out, gff_iterator,
-    #                         bam_file)
     for size in kmer:
         if outname == "phasing":  # ORFphase
             file_input = "./kmer_{}/{}_kmer_{}_phasing".format(str(size), rname, str(size))

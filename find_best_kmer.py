@@ -1,4 +1,6 @@
 import argparse
+import os
+
 import pandas as pd
 def get_args():
     """
@@ -36,6 +38,7 @@ def get_args():
 parameters = get_args()
 riboseq_name = parameters.fastq
 if riboseq_name.endswith(".fastq"):
+    riboseq_name = os.path.basename(riboseq_name)
     riboseq_name = riboseq_name.split(".")[0]
 mode = parameters.mode
 kmer_tab = pd.read_table("{}_phase_median_mean.tab".format(riboseq_name))
