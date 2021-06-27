@@ -1,9 +1,73 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 set -euxo pipefail
-arr_srr=(/media/crabier/Elements/SRA/SRR6398750.fastq /media/crabier/Elements/SRA/SRR6398751.fastq /media/crabier/Elements/SRA/SRR6398752.fastq /media/crabier/Elements/SRA/SRR6398753.fastq /media/crabier/Elements/SRA/SRR6398754.fastq /media/crabier/Elements/SRA/SRR6398755.fastq /media/crabier/Elements/SRA/SRR6398756.fastq)
-for i in "${arr_srr[@]}"
-do
-  python ORFphase_python3.py -gff Saccer.gff -fasta Saccer3.fasta -fastq "$i" -adapt CTGTAGGCACCATCAAT
-  j=$(python find_best_kmer.py -fastq "$i")
-  python ORFribomap.py -gff Saccer.gff -fasta Saccer3.fasta -fastq "$i" -kmer "$j" -cutdir . -o nc -features_include nc_intergenic -options MBP
-done
+#Get args
+kmer1=26
+kmer2=30
+for i in "$@"; do
+  case $i in
+    -gff)
+      shift
+      if [[ -f "$1" ]]; then
+        GFF="$1"
+      else
+        echo "File does not exist"
+      fi
+      shift
+      ;;
+    -fasta)
+      shift
+      if [[ -f "$1" ]]; then
+        FASTA="$1"
+      else
+        echo "File does not exist"
+        exit 1
+      fi
+      shift
+      ;;
+    -fastq)
+      shift
+      if [[ -f "$1" ]]; then
+        FASTQ="$1"
+      else
+        echo "File does not exist"
+        exit 1
+      fi
+      shift
+      ;;
+    -adapt)
+      shift
+        ADAPT="$1"
+      shift
+      ;;
+    -kmer)
+      shift
+      if [[ "$1" =~ ^[0-9]+$ ]];then
+        kmer1="$1"
+        exit 1
+      else
+        echo "Not a number"
+      fi
+      shift
+      if [[ "$1" =~ ^[0-9]+$ ]];then
+        kmer2="$1"
+      else
+        echo "Not a number"
+        exit 1
+      fi
+      shift
+      ;;
+    -h|--help)
+      echo "Arguments to give:"
+      echo "-gff  :         path of the annotation file"
+      echo "-fasta:         path of the genome file"
+      echo "-fastq:         path of the riboseq file"
+      echo "-adapt:         adaptor sequence"
+      echo "-kmer :         range of reads size to analyse"
+      exit 0
+      ;;
+  esac
+done;
+#Launch python scripts
+python ORFphase_python3.py -gff "${GFF}" -fasta "${FASTA}" -fastq "${FASTQ}" -adapt "${ADAPT}" -kmer kmer1 kmer2
+j=$(python find_best_kmer.py -fastq "${FASTQ}")
+python ORFribomap.py -gff "${GFF}" -fasta "${FASTA}" -fastq "${FASTQ}" -kmer "$j" -cutdir . -o nc -features_include nc_intergenic

@@ -5,6 +5,7 @@ import sys
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import seaborn as sns
 
 
@@ -144,17 +145,21 @@ def reads_phase_plot(table, kmer, rname, reads_thr, outname):
     :return:
     '''
     tab_select = table[table['Number reads'] > reads_thr]
+    tab_select=tab_select.rename(columns={"Perc. p0":"P0", "Perc. p1":"P1", "Perc. p2":"P2"})
+    sns.set(font_scale = 1)
     plt.figure()
-    tab_select.boxplot(column=["Perc. p0", "Perc. p1", "Perc. p2"])
+    plt.title("Boxplot of the repartition of the reads phasing for the reads of size {} ".format(kmer))
+    tab_select.boxplot(column=["P0", "P1", "P2"])
     # plt.show()
     plt.savefig('./kmer_{}/{}_kmer_{}_{}_Boxplot_phases.png'.format(kmer, rname, kmer, outname))
     plt.figure()
-    plt.title("Repartition of the phases for the reads of size {} ".format(kmer))
     sns.set_style('whitegrid')
     try:
-        tab_select[["Perc. p0", "Perc. p1", "Perc. p2"]].plot.kde(bw_method=0.5)
+        tab_select[["P0", "P1", "P2"]].plot.kde(bw_method=0.5)
     except ValueError as ve:
         print("The density plot can't be generated for kmer_{} :".format(kmer), ve)
+    plt.title("Repartition of the reads phasing for the reads of size {} ".format(kmer))
+    plt.xlabel("Percentage of reads")
     plt.savefig('./kmer_{}/{}_kmer_{}_{}_Density_phases.png'.format(kmer, rname, kmer, outname))
     plt.close('all')
 
@@ -176,8 +181,14 @@ def reads_periodicity(kmer, rname, outname, type):
     tab_agg = pd.melt(tab, id_vars=["Phase"], var_name="Position", value_name="Number of reads")
     tab_agg["Position"] = pd.to_numeric(tab_agg["Position"]) - 2
     tab_agg = tab_agg.groupby(["Phase", "Position"], as_index=False).sum().sort_values(["Phase", "Position"])
+    sns.set(font_scale = 2)
     sns_plot = sns.catplot(x="Position", y="Number of reads", hue="Phase", data=tab_agg, kind="bar", height=8.27,
                            aspect=11.7 / 8.27)
+    sns_plot.set(xticks=range(0,50,5))
     if type == "stop":
-        sns_plot.set_xticklabels([x for x in range(-50, 0)])
+        sns_plot.fig.suptitle('Plot of the periodicity on the 50 last amino acids of the sequence for the reads of size {}'.format(kmer))
+        # sns_plot.set_xticklabels([x for x in range(-50, 0)])
+        sns_plot.set_xticklabels([x for x in range(-50, 0, 5)])
+    # else :
+        sns_plot.fig.suptitle('Plot of the periodicity on the 50 first amino acids of the sequence for the reads of size {}'.format(kmer))
     sns_plot.savefig("./kmer_{}/{}_kmer_{}_{}_periodicity_{}.png".format(kmer, rname, kmer, outname, type))

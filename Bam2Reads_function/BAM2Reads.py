@@ -76,6 +76,7 @@ def count_percentage_reads_to_file(file_output, elements_in, elements_out, gff_i
         features_found = 0
         wtab.write("ID\tNumber reads\tNumber p0\tNumber p1\tNumber p2\t"
                    "Perc. p0\tPerc. p1\tPerc. p2\n")
+        wper.write("ID\tNumber p0\tNumber p1\tNumber p2\n")
         for x, feature in enumerate(gff_iterator):
             # Filtering of the features
             if re.search(elements_out, feature.ftype) and not re.search(elements_in, feature.ftype):

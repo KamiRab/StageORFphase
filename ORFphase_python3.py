@@ -112,9 +112,9 @@ def reads_phase_percentage(tab):
     sumreads = tab["Number reads"].sum()
 
     # List with percentage of each phase
-    perc.append(phase0sum / sumreads*100)
-    perc.append(phase1sum / sumreads*100)
-    perc.append(phase2sum / sumreads*100)
+    perc.append(round(phase0sum / sumreads*100, 2))
+    perc.append(round(phase1sum / sumreads*100, 2))
+    perc.append(round(phase2sum / sumreads*100, 2))
     return perc
 
 
@@ -128,9 +128,9 @@ def phase_decision_mean_median(kmer, riboseq_name, reads_thr):
             tab = tab[tab["Number reads"] >= reads_thr]
 
             # List with median of number of reads per phase
-            median_by_kmer.append(tab["Perc. p0"].median())
-            median_by_kmer.append(tab["Perc. p1"].median())
-            median_by_kmer.append(tab["Perc. p2"].median())
+            median_by_kmer.append(round(tab["Perc. p0"].median(), 2))
+            median_by_kmer.append(round(tab["Perc. p1"].median(), 2))
+            median_by_kmer.append(round(tab["Perc. p2"].median(), 2))
             mean_by_kmer = reads_phase_percentage(tab)
             median_mean_tab.write("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(riboseq_name, size, median_by_kmer[0],
                                                                             median_by_kmer[1], median_by_kmer[2],

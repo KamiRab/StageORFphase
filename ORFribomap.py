@@ -42,7 +42,7 @@ def get_args():
     parser.add_argument("-cutdir",
                         type=str,
                         required=False,  # if directory not given, launch cutadapt
-                        nargs=1,
+                        nargs="*",
                         help="Directory containing the directories of reads filtered by size. "
                              "The subdirectories need to be named as kmer_n with n the size of the reads"
                              "If you already launched Ribomap one time with the use of cutadapt activated, "
@@ -135,7 +135,7 @@ def main():
                 print(mapping_gff + " exists, it will be used to extract the intergenic ORFs. If the file doesn't result "
                                     "from orftrack, please rename it and launch ORFribomap again".format(genome_name))
             else:
-                orftrack_cmd = "orftrack -fna {} -gff {}".format(genome_file, gff_file)
+                orftrack_cmd = "orftrack -fna {} -gff {} -chr_exclude chrmt".format(genome_file, gff_file)
                 print("Launch : ", orftrack_cmd)
                 process_orftrack = subprocess.run(orftrack_cmd, shell=True, universal_newlines=True)
 
